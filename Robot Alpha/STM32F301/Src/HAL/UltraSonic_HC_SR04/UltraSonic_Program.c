@@ -35,8 +35,7 @@ ES_t HC_SR04_Init(HC_SR04_Config_t* Copy_pArrUltrasonicConfigs) {
 
 	GPIO_PinConfig_t Echo = {
 			.GPIO_PinNumber = Copy_pArrUltrasonicConfigs->echoPin,
-			.GPIO_MODE = GPIO_MODE_OUTPUT_PUSHPULL,
-			.GPIO_OUTPUT_SPEED = GPIO_SPEED_2MHZ,
+			.GPIO_MODE = GPIO_MODE_INPUT_FLOATING,
 	};
 
 	MCAL_GPIO_Init(GPIOA, &Echo);

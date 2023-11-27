@@ -35,14 +35,14 @@ ES_t LCD_enuInit(LCD_t * Copy_pstrConfigs) {
 			.GPIO_OUTPUT_SPEED = GPIO_SPEED_2MHZ,
 	};
 
-	MCAL_GPIO_Init(GPIOA, &RS);
+	MCAL_GPIO_Init(GPIOB, &RS);
 
 	GPIO_PinConfig_t EN = {
 			.GPIO_PinNumber = Copy_pstrConfigs->En_Pin,
 			.GPIO_MODE = GPIO_MODE_OUTPUT_PUSHPULL,
 			.GPIO_OUTPUT_SPEED = GPIO_SPEED_2MHZ,
 	};
-	MCAL_GPIO_Init(GPIOA, &EN);
+	MCAL_GPIO_Init(GPIOB, &EN);
 
 	GPIO_PinConfig_t D7 = {
 			.GPIO_PinNumber = Copy_pstrConfigs->D7_Pin,
@@ -50,14 +50,14 @@ ES_t LCD_enuInit(LCD_t * Copy_pstrConfigs) {
 			.GPIO_OUTPUT_SPEED = GPIO_SPEED_2MHZ,
 	};
 
-	MCAL_GPIO_Init(GPIOA, &D7);
+	MCAL_GPIO_Init(GPIOB, &D7);
 
 	GPIO_PinConfig_t D6 = {
 			.GPIO_PinNumber = Copy_pstrConfigs->D6_Pin,
 			.GPIO_MODE = GPIO_MODE_OUTPUT_PUSHPULL,
 			.GPIO_OUTPUT_SPEED = GPIO_SPEED_2MHZ,
 	};
-	MCAL_GPIO_Init(GPIOA, &D6);
+	MCAL_GPIO_Init(GPIOB, &D6);
 
 	GPIO_PinConfig_t D5 = {
 			.GPIO_PinNumber = Copy_pstrConfigs->D5_Pin,
@@ -65,19 +65,19 @@ ES_t LCD_enuInit(LCD_t * Copy_pstrConfigs) {
 			.GPIO_OUTPUT_SPEED = GPIO_SPEED_2MHZ,
 	};
 
-	MCAL_GPIO_Init(GPIOA, &D5);
+	MCAL_GPIO_Init(GPIOB, &D5);
 
 	GPIO_PinConfig_t D4 = {
 			.GPIO_PinNumber = Copy_pstrConfigs->D4_Pin,
 			.GPIO_MODE = GPIO_MODE_OUTPUT_PUSHPULL,
 			.GPIO_OUTPUT_SPEED = GPIO_SPEED_2MHZ,
 	};
-	MCAL_GPIO_Init(GPIOA, &D4);
+	MCAL_GPIO_Init(GPIOB, &D4);
 
 	TIMER2_Init(RCC_CLK_8M);
-	MCAL_GPIO_WritePin(GPIOA, GPIO_PIN_5, GPIO_PIN_HIGH);
+	//MCAL_GPIO_WritePin(GPIOA, GPIO_PIN_5, GPIO_PIN_HIGH);
 	Delay_ms(35); //power on
-	MCAL_GPIO_WritePin(GPIOA, GPIO_PIN_5, GPIO_PIN_LOW);
+	//MCAL_GPIO_WritePin(GPIOA, GPIO_PIN_5, GPIO_PIN_LOW);
 
 	if(Copy_pstrConfigs->Mode == LCD_4Bit){
 
@@ -96,14 +96,14 @@ ES_t LCD_enuInit(LCD_t * Copy_pstrConfigs) {
 				.GPIO_OUTPUT_SPEED = GPIO_SPEED_2MHZ,
 		};
 
-		MCAL_GPIO_Init(GPIOA, &D3);
+		MCAL_GPIO_Init(GPIOB, &D3);
 
 		GPIO_PinConfig_t D2 = {
 				.GPIO_PinNumber = Copy_pstrConfigs->D2_Pin,
 				.GPIO_MODE = GPIO_MODE_OUTPUT_PUSHPULL,
 				.GPIO_OUTPUT_SPEED = GPIO_SPEED_2MHZ,
 		};
-		MCAL_GPIO_Init(GPIOA, &D2);
+		MCAL_GPIO_Init(GPIOB, &D2);
 
 		GPIO_PinConfig_t D1 = {
 				.GPIO_PinNumber = Copy_pstrConfigs->D1_Pin,
@@ -111,14 +111,14 @@ ES_t LCD_enuInit(LCD_t * Copy_pstrConfigs) {
 				.GPIO_OUTPUT_SPEED = GPIO_SPEED_2MHZ,
 		};
 
-		MCAL_GPIO_Init(GPIOA, &D1);
+		MCAL_GPIO_Init(GPIOB, &D1);
 
 		GPIO_PinConfig_t D0 = {
 				.GPIO_PinNumber = Copy_pstrConfigs->D0_Pin,
 				.GPIO_MODE = GPIO_MODE_OUTPUT_PUSHPULL,
 				.GPIO_OUTPUT_SPEED = GPIO_SPEED_2MHZ,
 		};
-		MCAL_GPIO_Init(GPIOA, &D0);
+		MCAL_GPIO_Init(GPIOB, &D0);
 	}
 
 

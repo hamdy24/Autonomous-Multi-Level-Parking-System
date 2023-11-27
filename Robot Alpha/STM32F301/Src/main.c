@@ -19,7 +19,7 @@
 #include <stdint.h>
 
 #if !defined(__SOFT_FP__) && defined(__ARM_FP)
-  #warning "FPU is not initialized, but the project is compiling for an FPU. Please initialize the FPU before use."
+#warning "FPU is not initialized, but the project is compiling for an FPU. Please initialize the FPU before use."
 #endif
 
 
@@ -36,44 +36,85 @@ int main(void)
 
 	RCC_GPIOB_CLK_EN();
 	RCC_GPIOA_CLK_EN();
+	RCC_TIMER2_CLK_EN();
+	RCC_TIMER3_CLK_EN();
 
+
+	uint8_t counter = 0;
+
+
+	TIMER2_Init(RCC_CLK_8M);
 
 	uint32_t UltraDistance = 0;
 
-	GPIO_PinConfig_t DC_EnPin = {
-		.GPIO_PinNumber = GPIO_PIN_8,
-		.GPIO_MODE = GPIO_MODE_OUTPUT_PUSHPULL,
-		.GPIO_OUTPUT_SPEED = GPIO_SPEED_2MHZ
+	GPIO_PinConfig_t DC_En1Pin = {
+			.GPIO_PinNumber = GPIO_PIN_7,
+			.GPIO_MODE = GPIO_MODE_OUTPUT_PUSHPULL,
+			.GPIO_OUTPUT_SPEED = GPIO_SPEED_2MHZ
 	};
+	MCAL_GPIO_Init(GPIOA, &DC_En1Pin);
+
 	GPIO_PinConfig_t DC_In1Pin = {
-		.GPIO_PinNumber = GPIO_PIN_9,
-		.GPIO_MODE = GPIO_MODE_OUTPUT_PUSHPULL,
-		.GPIO_OUTPUT_SPEED = GPIO_SPEED_2MHZ
+			.GPIO_PinNumber = GPIO_PIN_9,
+			.GPIO_MODE = GPIO_MODE_OUTPUT_PUSHPULL,
+			.GPIO_OUTPUT_SPEED = GPIO_SPEED_2MHZ
 	};
+	MCAL_GPIO_Init(GPIOA, &DC_In1Pin);
 
 	GPIO_PinConfig_t DC_In2Pin = {
-		.GPIO_PinNumber = GPIO_PIN_10,
-		.GPIO_MODE = GPIO_MODE_OUTPUT_PUSHPULL,
-		.GPIO_OUTPUT_SPEED = GPIO_SPEED_2MHZ
+			.GPIO_PinNumber = GPIO_PIN_10,
+			.GPIO_MODE = GPIO_MODE_OUTPUT_PUSHPULL,
+			.GPIO_OUTPUT_SPEED = GPIO_SPEED_2MHZ
 	};
+	MCAL_GPIO_Init(GPIOA, &DC_In2Pin);
+
+
+	GPIO_PinConfig_t DC_En2Pin = {
+			.GPIO_PinNumber = GPIO_PIN_6,
+			.GPIO_MODE = GPIO_MODE_OUTPUT_PUSHPULL,
+			.GPIO_OUTPUT_SPEED = GPIO_SPEED_2MHZ
+	};
+	MCAL_GPIO_Init(GPIOA, &DC_En2Pin);
+
+	GPIO_PinConfig_t DC_In3Pin = {
+			.GPIO_PinNumber = GPIO_PIN_11,
+			.GPIO_MODE = GPIO_MODE_OUTPUT_PUSHPULL,
+			.GPIO_OUTPUT_SPEED = GPIO_SPEED_2MHZ
+	};
+	MCAL_GPIO_Init(GPIOA, &DC_In3Pin);
+
+	GPIO_PinConfig_t DC_In4Pin = {
+			.GPIO_PinNumber = GPIO_PIN_12,
+			.GPIO_MODE = GPIO_MODE_OUTPUT_PUSHPULL,
+			.GPIO_OUTPUT_SPEED = GPIO_SPEED_2MHZ
+	};
+	MCAL_GPIO_Init(GPIOA, &DC_In4Pin);
 
 
 	HC_SR04_Init(&UltraSonic_Configs);
-	GPIO_PinConfig_t test = {
-			.GPIO_PinNumber = GPIO_PIN_5,
-			.GPIO_MODE = GPIO_MODE_OUTPUT_PUSHPULL,
-			.GPIO_OUTPUT_SPEED = GPIO_SPEED_2MHZ,
-	};
-	MCAL_GPIO_Init(GPIOA, &test);
+	//	GPIO_PinConfig_t test = {
+	//			.GPIO_PinNumber = GPIO_PIN_12,
+	//			.GPIO_MODE = GPIO_MODE_OUTPUT_PUSHPULL,
+	//			.GPIO_OUTPUT_SPEED = GPIO_SPEED_10MHZ,
+	//	};
+	//	MCAL_GPIO_Init(GPIOB, &test);
+
+
 	LCD_enuInit(&LCD_Configs);
 
-	MCAL_GPIO_Init(GPIOA, &DC_EnPin);
-	MCAL_GPIO_Init(GPIOA, &DC_In1Pin);
-	MCAL_GPIO_Init(GPIOA, &DC_In2Pin);
 
-	TIMER3_Init(RCC_CLK_8M);
 
-	MCAL_GPIO_WritePin(GPIOA, GPIO_PIN_8, GPIO_PIN_HIGH);
+	//MCAL_GPIO_WritePin(GPIOB, GPIO_PIN_12, GPIO_PIN_HIGH);
+
+	//	MCAL_GPIO_Init(GPIOA, &DC_EnPin);
+	//	MCAL_GPIO_Init(GPIOA, &DC_In1Pin);
+	//	MCAL_GPIO_Init(GPIOA, &DC_In2Pin);
+
+	//	TIMER3_Init(RCC_CLK_8M);
+
+	//MCAL_GPIO_WritePin(GPIOA, GPIO_PIN_7, GPIO_PIN_HIGH);
+	//MCAL_GPIO_WritePin(GPIOA, GPIO_PIN_6, GPIO_PIN_HIGH);
+
 
 
 
@@ -81,60 +122,121 @@ int main(void)
 	//uint8_t counter = 0;
 
 
-    /* Loop forever */
+	/* Loop forever */
 	while(1){
 
 
-		LCD_enuJumpCursorTo(1, 0);
-		LCD_enuSendString("Hi");
-		// Port A6
+		// -------------------- LCD Testing -----------------------------------------
 
 
-		Lcd_ES_tsendString(LCD_Instant_1, "Hello Hamdy");
+		//		LCD_enuJumpCursorTo(1, 0);
+		//		LCD_enuSendString("Reading ");
+		//		//		// Port A6
+		//		//
+		//		//
+		//		//		Lcd_ES_tsendString(LCD_Instant_1, "Hello Hamdy");
+		//		//
+		//		//
+
+		// -------------------- UltraSonic Testing -----------------------------------
+
+		//		HC_SR04_ReadDistance(&UltraDistance);
+
+
+
+
+
+		//		LCD_enuJumpCursorTo(1, 9);
+		//		LCD_enuSendString("is:     ");
+		//		LCD_enuJumpCursorTo(1, 12);
+		//		LCD_enuDisplayIntNum(UltraDistance);
+		//
+		//		Delay_ms(10);
+
+
+
+		// --------------------- DC Motor Speed Testing (PWM) -----------------------
+
+
+		//		MCAL_GPIO_WritePin(GPIOA, GPIO_PIN_9, GPIO_PIN_HIGH);
+		//		Delay_Timer3_ms(1000);
+		//		MCAL_GPIO_WritePin(GPIOA, GPIO_PIN_9, GPIO_PIN_LOW);
+		//		Delay_Timer3_ms(1000);
+
+		//		PWM(TIMER3, TIMER_CH1, counter, 1000, RCC_CLK_8M);
+		//
+		//		MCAL_GPIO_WritePin(GPIOA, GPIO_PIN_9, GPIO_PIN_HIGH);
+		//		MCAL_GPIO_WritePin(GPIOA, GPIO_PIN_10, GPIO_PIN_LOW);
+		//		Delay_ms(1000);
+		//
+		//
+		//		counter += 10;
+		//
+		//		if(counter > 100)
+		//			counter = 0;
+
+		//		Delay_ms(1000);
+		//		MCAL_GPIO_WritePin(GPIOA, GPIO_PIN_9, GPIO_PIN_LOW);
+		//		MCAL_GPIO_WritePin(GPIOA, GPIO_PIN_10, GPIO_PIN_HIGH);
+		//		Delay_ms(3000);
+
+
+		//		PWM(TIMER3, TIMER_CH1, 100, 1000, RCC_CLK_8M);
+		//
+
+
+		// -------------------------- DC Motor Testing ---------------------------------
 
 
 		HC_SR04_ReadDistance(&UltraDistance);
 
 
-		if(UltraDistance > 50)
+		LCD_enuJumpCursorTo(1, 0);
+		LCD_enuSendString("Reading ");
+
+
+		LCD_enuJumpCursorTo(1, 9);
+		LCD_enuSendString("is:     ");
+		LCD_enuJumpCursorTo(1, 12);
+		LCD_enuDisplayIntNum(UltraDistance);
+
+		if(UltraDistance <= 20)
 		{
+
+
+
+
+
+			// Timer3 CH2 --> A7  &&&& Timer3 CH1 --> A6
+
+
+			PWM(TIMER3, TIMER_CH2, 100, 1000, RCC_CLK_8M);
+			PWM(TIMER3, TIMER_CH1, 100, 1000, RCC_CLK_8M);
+
+
+
+			// 9, 10 ---- 11,12
 			MCAL_GPIO_WritePin(GPIOA, GPIO_PIN_9, GPIO_PIN_HIGH);
-		}else{
-			MCAL_GPIO_WritePin(GPIOA, GPIO_PIN_9, GPIO_PIN_LOW);
+			MCAL_GPIO_WritePin(GPIOA, GPIO_PIN_10, GPIO_PIN_LOW);
+			//Delay_ms(1000);
+			MCAL_GPIO_WritePin(GPIOA, GPIO_PIN_11, GPIO_PIN_HIGH);
+			MCAL_GPIO_WritePin(GPIOA, GPIO_PIN_12, GPIO_PIN_LOW);
+			//Delay_ms(3000);
+
+
+			counter += 10;
+
+			if(counter > 100)
+				counter = 0;
+
+			Delay_ms(100);
 		}
-		Delay_Timer3_ms(1000);
-
-		MCAL_GPIO_WritePin(GPIOA, GPIO_PIN_9, GPIO_PIN_HIGH);
-		Delay_Timer3_ms(1000);
-		MCAL_GPIO_WritePin(GPIOA, GPIO_PIN_9, GPIO_PIN_LOW);
-		Delay_Timer3_ms(1000);
-
-				PWM(TIMER3, TIMER_CH1, counter, 1000, RCC_CLK_8M);
-
-		MCAL_GPIO_WritePin(GPIOA, GPIO_PIN_9, GPIO_PIN_HIGH);
-		MCAL_GPIO_WritePin(GPIOA, GPIO_PIN_10, GPIO_PIN_LOW);
-		Delay_ms(1000);
 
 
-		counter += 10;
 
-		if(counter > 100)
-			counter = 0;
-
-		Delay_ms(1000);
-		MCAL_GPIO_WritePin(GPIOA, GPIO_PIN_9, GPIO_PIN_LOW);
-		MCAL_GPIO_WritePin(GPIOA, GPIO_PIN_10, GPIO_PIN_HIGH);
-		Delay_ms(3000);
+		Delay_ms(10);
 
 
-		PWM(TIMER3, TIMER_CH1, 100, 1000, RCC_CLK_8M);
-
-		MCAL_GPIO_WritePin(GPIOA, GPIO_PIN_9, GPIO_PIN_HIGH);
-		MCAL_GPIO_WritePin(GPIOA, GPIO_PIN_10, GPIO_PIN_LOW);
-		Delay_ms(1000);
-		MCAL_GPIO_WritePin(GPIOA, GPIO_PIN_9, GPIO_PIN_LOW);
-		MCAL_GPIO_WritePin(GPIOA, GPIO_PIN_10, GPIO_PIN_HIGH);
-		Delay_ms(3000);
 
 
 	}

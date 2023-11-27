@@ -36,19 +36,19 @@ typedef struct{
 	uint8_t ColumnsNum;
 
 	/** Control Pins  **/
-	uint8_t RS_Pin;
-	uint8_t RW_Pin;
-	uint8_t En_Pin;
+	uint16_t RS_Pin;
+	uint16_t RW_Pin;
+	uint16_t En_Pin;
 
 	/** Data Pins	**/
-	uint8_t D7_Pin;
-	uint8_t D6_Pin;
-	uint8_t D5_Pin;
-	uint8_t D4_Pin;
-	uint8_t D3_Pin;
-	uint8_t D2_Pin;
-	uint8_t D1_Pin;
-	uint8_t D0_Pin;
+	uint16_t D7_Pin;
+	uint16_t D6_Pin;
+	uint16_t D5_Pin;
+	uint16_t D4_Pin;
+	uint16_t D3_Pin;
+	uint16_t D2_Pin;
+	uint16_t D1_Pin;
+	uint16_t D0_Pin;
 
 }LCD_t;
 
