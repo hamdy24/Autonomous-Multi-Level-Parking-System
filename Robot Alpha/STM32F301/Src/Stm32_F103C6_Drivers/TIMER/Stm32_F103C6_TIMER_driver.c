@@ -50,7 +50,14 @@ void TIMER2_Init(CLOCK_SPEED Clock_Speed_MHz)
 }
 
 
-
+/**================================================================
+ * @Fn					- TIMER3_Init
+ * @brief 				- This initialization mainly to provide delay using timer3
+ * @param [in] 			- None
+ * @retval 				- None
+ * Note					- This isn't the full initialization for timer3
+ *
+ */
 
 void TIMER3_Init(CLOCK_SPEED Clock_Speed_MHz)
 {
@@ -83,6 +90,49 @@ void TIMER3_Init(CLOCK_SPEED Clock_Speed_MHz)
 	// has finished counting to its ARR value and generated an interrupt.
 	while(!((TIMER3->SR) & (1<<0)));
 }
+
+
+/**================================================================
+ * @Fn					- TIMER4_Init
+ * @brief 				- This initialization mainly to provide delay using timer3
+ * @param [in] 			- None
+ * @retval 				- None
+ * Note					- This isn't the full initialization for timer3
+ *
+ */
+
+void TIMER4_Init(CLOCK_SPEED Clock_Speed_MHz)
+{
+	// Enable clock for timer2
+	RCC_TIMER4_CLK_EN();
+
+	// Choose a prescalar (8MHz/(7+1)=1MHz clock)
+	//	TIMER2->PSC = 7;
+
+	// If 36MHz clock used (36MHz/(35+1)=1MHz clock)
+	//	TIMER2->PSC = 35;
+
+
+	// Generic Prescalar (To get 1MHz clock speed for timer)
+	TIMER4->PSC = (Clock_Speed_MHz - 1);
+
+
+	// Choose a value for auto reload register (we didn't use the maximum value because we doesn't have long delays)
+	// Timer 2 will generate an interrupt every 50 milliseconds
+	// The auto-reload register (ARR) is used for the purpose of resetting the timer counter back to 0 when it reaches the value specified in ARR.
+	// This process is often referred to as "wrapping" or "overflowing."
+	TIMER4->ARR = 0xC350;  // 50000*1us = 0.05s
+
+	// Enable Timer2
+	TIMER4->CR1 |= (1<<0);
+
+
+	//Wait until the update flag (UIF) in the status register (SR) of TIM2 becomes 1.
+	// This indicates that the timer
+	// has finished counting to its ARR value and generated an interrupt.
+	while(!((TIMER4->SR) & (1<<0)));
+}
+
 
 
 /**================================================================
@@ -119,11 +169,33 @@ void Delay_ms(int ms)
 }
 
 
+/**================================================================
+ * @Fn					- Delay_Timer3_us
+ * @brief 				- Provides delays in microseconds using timer3
+ * @param [in] 			- us: Delay in microseconds
+ * @retval 				- None
+ * Note					- You must initialize timer3 before using this function
+ *
+ */
+
+
+
 void Delay_Timer3_us(int us)
 {
 	TIMER3->CNT = 0;
 	while((TIMER3->CNT) < us);
 }
+
+
+/**================================================================
+ * @Fn					- Delay_Timer3_ms
+ * @brief 				- Provides delays in milliseconds using timer3
+ * @param [in] 			- ms: Delay in milliseconds
+ * @retval 				- None
+ * Note					- You must initialize timer3 before using this function
+ *
+ */
+
 
 
 void Delay_Timer3_ms(int ms)
@@ -132,6 +204,47 @@ void Delay_Timer3_ms(int ms)
 	for(i=0;i<ms;i++)
 	{
 		Delay_Timer3_us(1000);
+	}
+}
+
+
+
+
+/**================================================================
+ * @Fn					- Delay_Timer4_us
+ * @brief 				- Provides delays in microseconds using timer4
+ * @param [in] 			- us: Delay in microseconds
+ * @retval 				- None
+ * Note					- You must initialize timer4 before using this function
+ *
+ */
+
+
+
+void Delay_Timer4_us(int us)
+{
+	TIMER4->CNT = 0;
+	while((TIMER4->CNT) < us);
+}
+
+
+/**================================================================
+ * @Fn					- Delay_Timer4_ms
+ * @brief 				- Provides delays in milliseconds using timer4
+ * @param [in] 			- ms: Delay in milliseconds
+ * @retval 				- None
+ * Note					- You must initialize timer4 before using this function
+ *
+ */
+
+
+
+void Delay_Timer4_ms(int ms)
+{
+	int i;
+	for(i=0;i<ms;i++)
+	{
+		Delay_Timer4_us(1000);
 	}
 }
 

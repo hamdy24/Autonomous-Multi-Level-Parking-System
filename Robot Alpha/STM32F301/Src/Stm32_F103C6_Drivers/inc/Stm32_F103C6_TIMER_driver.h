@@ -60,4 +60,12 @@ void Delay_Timer3_ms(int ms);
 void Delay_Timer3_us(int us);
 
 
+void TIMER4_Init(CLOCK_SPEED Clock_Speed_MHz);
+
+
+void Delay_Timer4_ms(int ms);
+
+void Delay_Timer4_us(int us);
+
+
 #endif /* STM32_F103C6_DRIVERS_INC_STM32_F103C6_TIMER_DRIVER_H_ */
