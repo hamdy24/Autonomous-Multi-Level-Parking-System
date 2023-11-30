@@ -75,8 +75,8 @@ all: main-build
 main-build: AlphaRobot.elf secondary-outputs
 
 # Tool invocations
-AlphaRobot.elf AlphaRobot.map: $(OBJS) $(USER_OBJS) D:\Engineering\ARM_Projects\AlphaRobot\STM32F103C8TX_FLASH.ld makefile objects.list $(OPTIONAL_TOOL_DEPS)
-	arm-none-eabi-gcc -o "AlphaRobot.elf" @"objects.list" $(USER_OBJS) $(LIBS) -mcpu=cortex-m3 -T"D:\Engineering\ARM_Projects\AlphaRobot\STM32F103C8TX_FLASH.ld" --specs=nosys.specs -Wl,-Map="AlphaRobot.map" -Wl,--gc-sections -static --specs=nano.specs -mfloat-abi=soft -mthumb -Wl,--start-group -lc -lm -Wl,--end-group
+AlphaRobot.elf AlphaRobot.map: $(OBJS) $(USER_OBJS) D:\Autonomous-Parking-System\Robot\ Alpha\STM32F301\STM32F103C8TX_FLASH.ld makefile objects.list $(OPTIONAL_TOOL_DEPS)
+	arm-none-eabi-gcc -o "AlphaRobot.elf" @"objects.list" $(USER_OBJS) $(LIBS) -mcpu=cortex-m3 -T"D:\Autonomous-Parking-System\Robot Alpha\STM32F301\STM32F103C8TX_FLASH.ld" --specs=nosys.specs -Wl,-Map="AlphaRobot.map" -Wl,--gc-sections -static --specs=nano.specs -mfloat-abi=soft -mthumb -Wl,--start-group -lc -lm -Wl,--end-group
 	@echo 'Finished building target: $@'
 	@echo ' '
 

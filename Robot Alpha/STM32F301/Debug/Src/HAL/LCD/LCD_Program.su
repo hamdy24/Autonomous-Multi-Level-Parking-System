@@ -1,4 +1,4 @@
-../Src/HAL/LCD/LCD_Program.c:24:6:LCD_enuInit	64	static
+../Src/HAL/LCD/LCD_Program.c:24:6:LCD_enuInit	96	static
 ../Src/HAL/LCD/LCD_Program.c:140:13:LCD_enuWriteAndLatch	24	static
 ../Src/HAL/LCD/LCD_Program.c:225:6:LCD_enuSendData	24	static
 ../Src/HAL/LCD/LCD_Program.c:235:6:LCD_enuSendCommand	24	static

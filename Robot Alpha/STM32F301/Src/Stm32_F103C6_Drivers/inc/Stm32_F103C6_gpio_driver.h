@@ -24,6 +24,7 @@ typedef struct
 {
 	// This parameter must be set based on @ref GPIO_PIN_define
 	uint16_t GPIO_PinNumber;   // Specifies the GPIO pin to be configured
+	uint16_t GPIO_PortNumber;   // Specifies the GPIO port to be configured
 
 	// This parameter must be set based on @ref GPIO_MODE_define
 	uint8_t GPIO_MODE;  // Specifies the operation mode of the selected pin

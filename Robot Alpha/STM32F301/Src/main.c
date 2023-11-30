@@ -28,8 +28,17 @@
 #include "Stm32_F103C6_Drivers/inc/Stm32_F103C6_RCC_driver.h"
 
 #include "HAL/UltraSonic_HC_SR04/UltraSonic_Interface.h"
-
+#include"HAL/DC_Motor/DC_Motor.h"
 #include "HAL/LCD/LCD_Interface.h"
+
+Motor_t motor_1={
+		.Dc_motor[0].GPIO_PortNumber=GPIOB,
+		.Dc_motor[0].GPIO_PinNumber=GPIO_PIN_11,
+		.Dc_motor[0].GPIO_OUTPUT_SPEED=GPIO_SPEED_10MHZ,
+		.Dc_motor[1].GPIO_PortNumber=GPIOB,
+		.Dc_motor[1].GPIO_PinNumber=GPIO_PIN_12,
+		.Dc_motor[1].GPIO_OUTPUT_SPEED=GPIO_SPEED_10MHZ
+};
 
 int main(void)
 {
@@ -118,14 +127,17 @@ int main(void)
 
 
 
-
 	//uint8_t counter = 0;
+	Motor_intialize(&motor_1);
+
 
 
 	/* Loop forever */
 	while(1){
 
-
+		Motor_Move_ForWard(&motor_1);
+		Delay_ms(10);
+		Motor_Move_BackWard(&motor_1);
 		// -------------------- LCD Testing -----------------------------------------
 
 
