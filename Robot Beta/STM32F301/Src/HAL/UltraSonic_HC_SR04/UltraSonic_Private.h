@@ -29,6 +29,8 @@
 
 /************************************ Private Declaration Start *************************************************/
 
+extern uint8_t HC_Num;
+
 static HC_SR04_Config_t * Private_pConfigs;
 
 /************************************ Private Declaration  END  *************************************************/
@@ -36,7 +38,7 @@ static HC_SR04_Config_t * Private_pConfigs;
 /************************************ Private Software Interfaces Start *************************************************/
 
 // Send a trigger signal to start distance measurement
-static void HC_SR04_Trigger();
+static void HC_SR04_Trigger(uint8_t Sensor_Num);
 
 /************************************ Private Software Interfaces END  *************************************************/
 

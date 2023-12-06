@@ -26,41 +26,46 @@
 ES_t HC_SR04_Init(HC_SR04_Config_t* Copy_pArrUltrasonicConfigs) {
 	TIMER3_Init(RCC_CLK_8M);
 
-	GPIO_PinConfig_t Trigger = {
-			.GPIO_PinNumber = Copy_pArrUltrasonicConfigs->triggerPin,
-			.GPIO_MODE = GPIO_MODE_OUTPUT_PUSHPULL,
-			.GPIO_OUTPUT_SPEED = GPIO_SPEED_2MHZ,
-	};
+	uint8_t Local_Iterator = 0;
+	for(Local_Iterator = 0;Local_Iterator<HC_Num;Local_Iterator++){
 
-	MCAL_GPIO_Init(GPIOA, &Trigger);
+		GPIO_PinConfig_t Trigger = {
+				.GPIO_PinNumber = Copy_pArrUltrasonicConfigs[Local_Iterator].triggerPin,
+				.GPIO_MODE = GPIO_MODE_OUTPUT_PUSHPULL,
+				.GPIO_OUTPUT_SPEED = GPIO_SPEED_2MHZ,
+		};
 
-	GPIO_PinConfig_t Echo = {
-			.GPIO_PinNumber = Copy_pArrUltrasonicConfigs->echoPin,
-			.GPIO_MODE = GPIO_MODE_INPUT_FLOATING,
-	};
+		MCAL_GPIO_Init(GPIOA, &Trigger);
 
-	MCAL_GPIO_Init(GPIOA, &Echo);
+		GPIO_PinConfig_t Echo = {
+				.GPIO_PinNumber = Copy_pArrUltrasonicConfigs[Local_Iterator].echoPin,
+				.GPIO_MODE = GPIO_MODE_INPUT_FLOATING,
+		};
+
+		MCAL_GPIO_Init(GPIOA, &Echo);
+	}
+
 
 	Private_pConfigs = Copy_pArrUltrasonicConfigs;
 
     return ES_OK;
 }
 
-void HC_SR04_Trigger() {
+void HC_SR04_Trigger(uint8_t Sensor_Num) {
     // Send a 10us pulse on the trigger pin to initiate measurement
-	MCAL_GPIO_WritePin(GPIOA, Private_pConfigs->triggerPin, GPIO_PIN_HIGH);
+	MCAL_GPIO_WritePin(GPIOA, Private_pConfigs[Sensor_Num].triggerPin, GPIO_PIN_HIGH);
     Delay_Timer3_us(10); // Delay for 10us
-	MCAL_GPIO_WritePin(GPIOA, Private_pConfigs->triggerPin, GPIO_PIN_LOW);
+	MCAL_GPIO_WritePin(GPIOA, Private_pConfigs[Sensor_Num].triggerPin, GPIO_PIN_LOW);
 }
 
-ES_t HC_SR04_ReadDistance(uint32_t* distance_cm) {
+ES_t HC_SR04_ReadDistance(uint8_t Sensor_Num,uint32_t* distance_cm) {
     // Send trigger signal to start measurement
-    HC_SR04_Trigger();
+    HC_SR04_Trigger(Sensor_Num);
 
     uint8_t echoValue;
     // Wait for the rising edge of the echo signal
     do{
-    	echoValue = MCAL_GPIO_ReadPin(Private_pConfigs->port,Private_pConfigs->echoPin);
+    	echoValue = MCAL_GPIO_ReadPin(Private_pConfigs[Sensor_Num].port,Private_pConfigs[Sensor_Num].echoPin);
     }
     while ( echoValue == GPIO_PIN_LOW);
 
@@ -69,7 +74,7 @@ ES_t HC_SR04_ReadDistance(uint32_t* distance_cm) {
 
     // Wait for the falling edge of the echo signal
     do{
-    	echoValue = MCAL_GPIO_ReadPin(Private_pConfigs->port,Private_pConfigs->echoPin);
+    	echoValue = MCAL_GPIO_ReadPin(Private_pConfigs[Sensor_Num].port,Private_pConfigs[Sensor_Num].echoPin);
     }
     while (echoValue == GPIO_PIN_HIGH);
 

@@ -16,7 +16,7 @@
 
 /************************************ Initialization Helper Start *************************************************/
 
-extern HC_SR04_Config_t UltraSonic_Configs;
+extern HC_SR04_Config_t UltraSonic_Configs[2];
 
 /************************************ Initialization Helper END  *************************************************/
 
@@ -25,7 +25,7 @@ extern HC_SR04_Config_t UltraSonic_Configs;
 // Initialize HC-SR04
 ES_t HC_SR04_Init(HC_SR04_Config_t* Copy_pArrUltrasonicConfigs);
 // Read the distance measured by HC-SR04 in centimeters
-ES_t HC_SR04_ReadDistance(uint32_t* distance_cm);
+ES_t HC_SR04_ReadDistance(uint8_t Sensor_Num,uint32_t* distance_cm);
 
 
 /************************************ Software Interfaces END  *************************************************/

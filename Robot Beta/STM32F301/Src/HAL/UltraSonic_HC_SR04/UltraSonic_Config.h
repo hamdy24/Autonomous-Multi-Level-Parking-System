@@ -29,6 +29,10 @@
 
 /************************************ DataTypes Declaration Start *************************************************/
 
+
+
+
+
 // Configuration structure for HC-SR04
 typedef struct {
 	GPIO_TypeDef* port;
