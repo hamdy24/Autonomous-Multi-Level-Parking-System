@@ -27,6 +27,7 @@ Src/HAL/DC_Motor \
 Src/HAL/LCD \
 Src/HAL/LED \
 Src/HAL/MPU6050 \
+Src/HAL/Stepper \
 Src/HAL/UltraSonic_HC_SR04 \
 Src/Stm32_F103C6_Drivers/EXTI \
 Src/Stm32_F103C6_Drivers/GPIO \

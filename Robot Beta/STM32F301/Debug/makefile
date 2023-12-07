@@ -17,6 +17,7 @@ RM := rm -rf
 -include Src/Stm32_F103C6_Drivers/GPIO/subdir.mk
 -include Src/Stm32_F103C6_Drivers/EXTI/subdir.mk
 -include Src/HAL/UltraSonic_HC_SR04/subdir.mk
+-include Src/HAL/Stepper/subdir.mk
 -include Src/HAL/MPU6050/subdir.mk
 -include Src/HAL/LED/subdir.mk
 -include Src/HAL/LCD/subdir.mk

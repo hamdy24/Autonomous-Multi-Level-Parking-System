@@ -21,17 +21,17 @@ typedef enum{
 }Timer_Channel;
 
 
-#define Stepper_Port	GPIOA
 
-#define Step_Pin	GPIO_PIN_8
-#define Dir_Pin		GPIO_PIN_9
+extern uint8_t PinStepper_flag;
 
 
+//#define Stepper_Port	GPIOA
+//
+//#define Step_Pin	GPIO_PIN_8
+//#define Dir_Pin		GPIO_PIN_9
 
-typedef enum{
-	StepperCCW,
-	StepperCW
-}Stepper_Direction;
+
+
 
 //	Timer1 CH1 --> A8  @@ Timer2 CH1 --> A0 @@ Timer3 CH1 --> A6 @@ Timer4 CH1 --> B6
 //	Timer1 CH2 --> A9  @@ Timer2 CH2 --> A1 @@ Timer3 CH2 --> A7 @@ Timer4 CH2 --> B7
@@ -63,6 +63,10 @@ void PWM_Move_Steps(TIMER_Typedef *TIMERx, Timer_Channel ChannelX, uint16_t step
 uint32_t Get_TIMER3_Counter();
 
 void Disable_Timer2();
+
+void TIMER3_Stop(void);
+
+void TIMER4_Stop(void);
 
 
 

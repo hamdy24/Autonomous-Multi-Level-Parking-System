@@ -10,6 +10,13 @@
 #define HAL_DC_MOTOR_DC_MOTOR_H_
 /************************************ Includes Start *************************************************/
 #include "../../Stm32_F103C6_Drivers/inc/Stm32_F103C6_gpio_driver.h"
+#include "../../Stm32_F103C6_Drivers/inc/Stm32_F103C6_TIMER_driver.h"
+
+
+
+
+
+
 
 /************************************ Includes END  *************************************************/
 
@@ -28,15 +35,14 @@
 /************************************ DataTypes Declaration Start *************************************************/
 
 typedef struct{
-	uint8_t GPIO_PinNumber;
-	uint8_t GPIO_PortNumber;
-	uint8_t GPIO_MODE;
-	uint8_t GPIO_OUTPUT_SPEED;
-}motor_PinConfig_t;
+	uint16_t DC_Pin1Number;
+	uint16_t DC_Pin2Number;
+	GPIO_TypeDef* DC_PortNumber;
+	TIMER_Typedef* PWM_Timer;
+	Timer_Channel PWM_Channel;
+}Motor_Config_t;
 
-typedef struct{
-	motor_PinConfig_t Dc_motor [2];
-}Motor_t;
+
 
 
 /************************************ DataTypes Declaration  END  *************************************************/
@@ -45,10 +51,10 @@ typedef struct{
 
 
 /************************************ Initialization Helper Start *************************************************/
-void Motor_intialize(const Motor_t *Motor);
-void Motor_TurnOff(const Motor_t *Motor);
-void Motor_Move_ForWard(const Motor_t *Motor);
-void Motor_Move_BackWard(const Motor_t *Motor);
+void Motor_intialize(Motor_Config_t *Motor);
+void Motor_TurnOff(Motor_Config_t *Motor);
+void Motor_Move_ForWard(Motor_Config_t *Motor, uint8_t speed);
+void Motor_Move_BackWard(Motor_Config_t *Motor, uint8_t speed);
 
 
 

@@ -1,108 +1,96 @@
-///*
-// * DC_Motor.c
-// *
-// *  Author		: Hamdy Aouf
-// *  Created on	: Nov 26, 2023
-// *	Brief		: This file contains all the
-// */
+/*
+ * DC_Motor.c
+ *
+ *  Author		: Hamdy Aouf
+ *  Created on	: Nov 26, 2023
+ *	Brief		: This file contains all the
+ */
+
+
+/************************************ Includes Start *************************************************/
+/************************************ Includes END  *************************************************/
+
+
+/********************************************************************/
+/*	Description:	This Function sets  		*/
+/*	Parameters:							                       		*/
+/*		@param1: 						               		*/
+/*		&param2:			       		*/
+/*	Return:			Returns Error State 	                       	*/
+/*	Notes:			None  	*/
+/********************************************************************/
+
+
+
+#include "../includes/DC_Motor.h"
+
+
+void  Motor_intialize(Motor_Config_t *Motor){
+	GPIO_PinConfig_t Motor_IN1={
+			.GPIO_MODE=GPIO_MODE_OUTPUT_PUSHPULL,
+			.GPIO_PinNumber=Motor->DC_Pin1Number,
+			.GPIO_OUTPUT_SPEED=GPIO_SPEED_2MHZ
+	};
+	MCAL_GPIO_Init(Motor->DC_PortNumber, &Motor_IN1);
+
+	GPIO_PinConfig_t Motor_IN2={
+			.GPIO_MODE=GPIO_MODE_OUTPUT_PUSHPULL,
+			.GPIO_PinNumber=Motor->DC_Pin2Number,
+			.GPIO_OUTPUT_SPEED=GPIO_SPEED_2MHZ
+	};
+	MCAL_GPIO_Init(Motor->DC_PortNumber, &Motor_IN2);
+
+
+//	GPIO_PinConfig_t DC_En2Pin = { .GPIO_PinNumber = GPIO_PIN_6, .GPIO_MODE =
+//			GPIO_MODE_OUTPUT_PUSHPULL, .GPIO_OUTPUT_SPEED = GPIO_SPEED_2MHZ };
+//	MCAL_GPIO_Init(GPIOB, &DC_En2Pin);
+//
+//	GPIO_PinConfig_t DC_En1Pin = { .GPIO_PinNumber = GPIO_PIN_7, .GPIO_MODE =
+//			GPIO_MODE_OUTPUT_PUSHPULL, .GPIO_OUTPUT_SPEED = GPIO_SPEED_2MHZ };
+//	MCAL_GPIO_Init(GPIOB, &DC_En1Pin);
+
+
+//	MCAL_GPIO_WritePin(GPIOB, GPIO_PIN_6, GPIO_PIN_LOW);
+//	MCAL_GPIO_WritePin(GPIOB, GPIO_PIN_7, GPIO_PIN_LOW);
+
+}
+
+
+
+
+
+void Motor_TurnOff(Motor_Config_t *Motor){
+	MCAL_GPIO_WritePin(Motor->DC_PortNumber, Motor->DC_Pin1Number, GPIO_PIN_LOW);
+	MCAL_GPIO_WritePin(Motor->DC_PortNumber, Motor->DC_Pin2Number, GPIO_PIN_LOW);
+	MCAL_GPIO_WritePin(GPIOB, GPIO_PIN_6, GPIO_PIN_LOW);
+	MCAL_GPIO_WritePin(GPIOB, GPIO_PIN_7, GPIO_PIN_LOW);
+
+	TIMER4_Stop();
+}
+
+
+
+
+void Motor_Move_ForWard(Motor_Config_t *Motor, uint8_t speed){
 //
 //
-///************************************ Includes Start *************************************************/
-///************************************ Includes END  *************************************************/
-//
-//
-///********************************************************************/
-///*	Description:	This Function sets  		*/
-///*	Parameters:							                       		*/
-///*		@param1: 						               		*/
-///*		&param2:			       		*/
-///*	Return:			Returns Error State 	                       	*/
-///*	Notes:			None  	*/
-///********************************************************************/
-//
-//
-//
-//#include "../includes/DC_Motor.h"
-//
-//
-//void  Motor_intialize(const Motor_t *Motor){
-//	GPIO_PinConfig_t Motor_pin1={
-//		.GPIO_PortNumber=Motor->Dc_motor[0].GPIO_PortNumber,
-//		.GPIO_PinNumber=Motor->Dc_motor[0].GPIO_PinNumber,
-//		.GPIO_OUTPUT_SPEED=Motor->Dc_motor[0].GPIO_OUTPUT_SPEED
-//
-//	};
-//	GPIO_PinConfig_t Motor_pin2={
-//		.GPIO_PortNumber=Motor->Dc_motor[1].GPIO_PortNumber,
-//		.GPIO_PinNumber=Motor->Dc_motor[1].GPIO_PinNumber,
-//		.GPIO_OUTPUT_SPEED=Motor->Dc_motor[1].GPIO_OUTPUT_SPEED
-//
-//	};
-//	   MCAL_GPIO_Init(&(Motor->Dc_motor[0].GPIO_PortNumber), &Motor_1);
-//		MCAL_GPIO_Init(&(Motor->Dc_motor[1].GPIO_PortNumber), &Motor_2);
-//}
-//
-//void Motor_TurnOff(const Motor_t *Motor){
-//	GPIO_PinConfig_t Motor_pin1={
-//		.GPIO_PortNumber=Motor->Dc_motor[0].GPIO_PortNumber,
-//		.GPIO_PinNumber=Motor->Dc_motor[0].GPIO_PinNumber,
-//		.GPIO_OUTPUT_SPEED=Motor->Dc_motor[0].GPIO_OUTPUT_SPEED
-//
-//	};
-//	GPIO_PinConfig_t Motor_pin2={
-//		.GPIO_PortNumber=Motor->Dc_motor[1].GPIO_PortNumber,
-//		.GPIO_PinNumber=Motor->Dc_motor[1].GPIO_PinNumber,
-//		.GPIO_OUTPUT_SPEED=Motor->Dc_motor[1].GPIO_OUTPUT_SPEED
-//
-//	};
-//		MCAL_GPIO_WritePin(&(Motor->Dc_motor[0].GPIO_PortNumber),Motor->Dc_motor[0].GPIO_PinNumber,GPIO_PIN_LOW);
-//		MCAL_GPIO_WritePin(&(Motor->Dc_motor[1].GPIO_PortNumber),Motor->Dc_motor[1].GPIO_PinNumber,GPIO_PIN_LOW);
-//
-//
-//}
-//
-//
-//
-//
-//void Motor_Move_ForWard(const Motor_t *Motor){
-//
-//	GPIO_PinConfig_t Motor_pin1={
-//		.GPIO_PortNumber=Motor->Dc_motor[0].GPIO_PortNumber,
-//		.GPIO_PinNumber=Motor->Dc_motor[0].GPIO_PinNumber,
-//		.GPIO_OUTPUT_SPEED=Motor->Dc_motor[0].GPIO_OUTPUT_SPEED
-//
-//	};
-//	GPIO_PinConfig_t Motor_pin2={
-//		.GPIO_PortNumber=Motor->Dc_motor[1].GPIO_PortNumber,
-//		.GPIO_PinNumber=Motor->Dc_motor[1].GPIO_PinNumber,
-//		.GPIO_OUTPUT_SPEED=Motor->Dc_motor[1].GPIO_OUTPUT_SPEED
-//
-//	};
-//	MCAL_GPIO_WritePin(&(Motor->Dc_motor[0].GPIO_PortNumber),Motor->Dc_motor[0].GPIO_PinNumber,GPIO_PIN_HIGH);
-//	MCAL_GPIO_WritePin(&(Motor->Dc_motor[1].GPIO_PortNumber),Motor->Dc_motor[1].GPIO_PinNumber,GPIO_PIN_LOW);
-//
-//}
-//
-//
-//
-//
-//void Motor_Move_BackWard(const Motor_t *Motor){
-//
-//	GPIO_PinConfig_t Motor_pin1={
-//			.GPIO_PortNumber=Motor->Dc_motor[0].GPIO_PortNumber,
-//			.GPIO_PinNumber=Motor->Dc_motor[0].GPIO_PinNumber,
-//			.GPIO_OUTPUT_SPEED=Motor->Dc_motor[0].GPIO_OUTPUT_SPEED
-//
-//		};
-//		GPIO_PinConfig_t Motor_pin2={
-//			.GPIO_PortNumber=Motor->Dc_motor[1].GPIO_PortNumber,
-//			.GPIO_PinNumber=Motor->Dc_motor[1].GPIO_PinNumber,
-//			.GPIO_OUTPUT_SPEED=Motor->Dc_motor[1].GPIO_OUTPUT_SPEED
-//
-//		};
-//	MCAL_GPIO_WritePin(&(Motor->Dc_motor[0].GPIO_PortNumber),Motor->Dc_motor[0].GPIO_PinNumber,GPIO_PIN_LOW);
-//	MCAL_GPIO_WritePin(&(Motor->Dc_motor[1].GPIO_PortNumber),Motor->Dc_motor[1].GPIO_PinNumber,GPIO_PIN_HIGH);
-//
-//}
-//
-//
+//	MCAL_GPIO_WritePin(GPIOB, GPIO_PIN_7, GPIO_PIN_HIGH);
+//	MCAL_GPIO_WritePin(GPIOB, GPIO_PIN_6, GPIO_PIN_HIGH);
+
+	PWM(Motor->PWM_Timer, Motor->PWM_Channel, speed, 1000, RCC_CLK_8M);
+
+	MCAL_GPIO_WritePin(Motor->DC_PortNumber, Motor->DC_Pin1Number,GPIO_PIN_HIGH);
+	MCAL_GPIO_WritePin(Motor->DC_PortNumber, Motor->DC_Pin2Number,GPIO_PIN_LOW);
+
+}
+
+
+
+
+void Motor_Move_BackWard(Motor_Config_t *Motor, uint8_t speed){
+	PWM(Motor->PWM_Timer, Motor->PWM_Channel, speed, 1000, RCC_CLK_8M);
+	MCAL_GPIO_WritePin(Motor->DC_PortNumber, Motor->DC_Pin1Number,GPIO_PIN_LOW);
+	MCAL_GPIO_WritePin(Motor->DC_PortNumber, Motor->DC_Pin2Number,GPIO_PIN_HIGH);
+}
+
+

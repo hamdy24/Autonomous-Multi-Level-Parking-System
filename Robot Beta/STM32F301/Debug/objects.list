@@ -4,6 +4,7 @@
 "./Src/HAL/LED/LED.o"
 "./Src/HAL/MPU6050/MPU6050_Config.o"
 "./Src/HAL/MPU6050/MPU6050_Program.o"
+"./Src/HAL/Stepper/Stepper.o"
 "./Src/HAL/UltraSonic_HC_SR04/UltraSonic_Config.o"
 "./Src/HAL/UltraSonic_HC_SR04/UltraSonic_Program.o"
 "./Src/Stm32_F103C6_Drivers/EXTI/Stm32_F103C6_EXTI_driver.o"

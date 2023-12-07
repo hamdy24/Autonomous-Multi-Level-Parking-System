@@ -16,8 +16,8 @@
 
 typedef enum
 {
-	Stepper_CCW,
-	Stepper_CW
+	Stepper_Down,
+	Stepper_UP
 }Stepper_Direction;
 
 void Stepper_Init(GPIO_PinConfig_t* DirPin);

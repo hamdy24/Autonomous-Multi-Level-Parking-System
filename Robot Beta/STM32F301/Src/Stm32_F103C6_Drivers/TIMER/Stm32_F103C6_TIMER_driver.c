@@ -17,6 +17,10 @@
  *
  */
 
+
+uint8_t PinStepper_flag = 0;
+
+
 void TIMER2_Init(CLOCK_SPEED Clock_Speed_MHz)
 {
 	// Enable clock for timer2
@@ -483,6 +487,19 @@ void TIMER2_Stop()
 	TIMER2->CR1 &= ~(1<<0);
 }
 
+void TIMER3_Stop()
+{
+	// Bit 0 CEN: Counter enable
+	TIMER3->CR1 &= ~(1<<0);
+}
+
+
+void TIMER4_Stop()
+{
+	// Bit 0 CEN: Counter enable
+	TIMER4->CR1 &= ~(1<<0);
+}
+
 
 
 uint8_t stepper_Flag = 0;
@@ -856,6 +873,7 @@ void TIM2_IRQHandler()
 		}else{
 			stepper_Flag = 0;
 			TIMER2->CR1 &= ~(1<<0);   // Disable timer
+			PinStepper_flag = 1;
 		}
 	}else{   // For further usage rather than stepper
 

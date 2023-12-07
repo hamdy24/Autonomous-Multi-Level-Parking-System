@@ -33,38 +33,55 @@
 
 #include "../Src/HAL/Stepper/Stepper.h"
 
+
+#include "../Src/HAL/includes/DC_Motor.h"
+
+#define TARGET_DISTANCE_MIN 2
+#define TARGET_DISTANCE_MAX 4
+
+float Kp = 1.0; // Proportional gain
+
+
 int main(void) {
 
 	//RCC_GPIOC_CLK_EN();
 	RCC_GPIOB_CLK_EN();
 	RCC_GPIOA_CLK_EN();
 
+	RCC_TIMER3_CLK_EN();
+
+
+
+
+
+
+
 	TIMER3_Init(RCC_CLK_8M);
 
-	GPIO_PinConfig_t DC_En1Pin = { .GPIO_PinNumber = GPIO_PIN_7, .GPIO_MODE =
-			GPIO_MODE_OUTPUT_PUSHPULL, .GPIO_OUTPUT_SPEED = GPIO_SPEED_2MHZ };
-	MCAL_GPIO_Init(GPIOB, &DC_En1Pin);
-	//
-	GPIO_PinConfig_t DC_In1Pin = { .GPIO_PinNumber = GPIO_PIN_9, .GPIO_MODE =
-			GPIO_MODE_OUTPUT_PUSHPULL, .GPIO_OUTPUT_SPEED = GPIO_SPEED_2MHZ };
-	MCAL_GPIO_Init(GPIOA, &DC_In1Pin);
 
-	GPIO_PinConfig_t DC_In2Pin = { .GPIO_PinNumber = GPIO_PIN_10, .GPIO_MODE =
-			GPIO_MODE_OUTPUT_PUSHPULL, .GPIO_OUTPUT_SPEED = GPIO_SPEED_2MHZ };
-	MCAL_GPIO_Init(GPIOA, &DC_In2Pin);
-	//
-	//
-	GPIO_PinConfig_t DC_En2Pin = { .GPIO_PinNumber = GPIO_PIN_6, .GPIO_MODE =
-			GPIO_MODE_OUTPUT_PUSHPULL, .GPIO_OUTPUT_SPEED = GPIO_SPEED_2MHZ };
-	MCAL_GPIO_Init(GPIOB, &DC_En2Pin);
-	//
-	GPIO_PinConfig_t DC_In3Pin = { .GPIO_PinNumber = GPIO_PIN_11, .GPIO_MODE =
-			GPIO_MODE_OUTPUT_PUSHPULL, .GPIO_OUTPUT_SPEED = GPIO_SPEED_2MHZ };
-	MCAL_GPIO_Init(GPIOA, &DC_In3Pin);
+	Motor_Config_t DC_Motor1 =
+	{
+			.DC_Pin1Number = GPIO_PIN_9,
+			.DC_Pin2Number = GPIO_PIN_10,
+			.DC_PortNumber = GPIOA,
+			.PWM_Timer = TIMER4,
+			.PWM_Channel = TIMER_CH2
+	};
 
-	GPIO_PinConfig_t DC_In4Pin = { .GPIO_PinNumber = GPIO_PIN_12, .GPIO_MODE =
-			GPIO_MODE_OUTPUT_PUSHPULL, .GPIO_OUTPUT_SPEED = GPIO_SPEED_2MHZ };
-	MCAL_GPIO_Init(GPIOA, &DC_In4Pin);
+	Motor_intialize(&DC_Motor1);
+
+
+	Motor_Config_t DC_Motor2 =
+	{
+			.DC_Pin1Number = GPIO_PIN_11,
+			.DC_Pin2Number = GPIO_PIN_12,
+			.DC_PortNumber = GPIOA,
+			.PWM_Timer = TIMER4,
+			.PWM_Channel = TIMER_CH1
+	};
+//
+	Motor_intialize(&DC_Motor2);
+
 
 	LCD_enuInit(&LCD_Configs);
 
@@ -73,192 +90,94 @@ int main(void) {
 	GPIO_PinConfig_t StepperDirPin = { .GPIO_PinNumber = GPIO_PIN_9,
 			.GPIO_MODE = GPIO_MODE_OUTPUT_PUSHPULL, .GPIO_OUTPUT_SPEED =
 					GPIO_SPEED_2MHZ };
-	//MCAL_GPIO_Init(GPIOB, &StepperDirPin);
 	Stepper_Init(&StepperDirPin);
-
-	Stepper_Move_Steps(TIMER2, TIMER_CH1, 30000, 50, 500, Stepper_CCW);
 
 
 	uint32_t Ultra1Distance = 0;
 	uint32_t Ultra2Distance = 0;
 
-//	MCAL_GPIO_WritePin(GPIOB, GPIO_PIN_7, GPIO_PIN_LOW);
-//	MCAL_GPIO_WritePin(GPIOB, GPIO_PIN_6, GPIO_PIN_HIGH);
-
-//	MCAL_GPIO_WritePin(GPIOA, GPIO_PIN_9, GPIO_PIN_HIGH);
-//	MCAL_GPIO_WritePin(GPIOA, GPIO_PIN_10, GPIO_PIN_LOW);
-//
-//	MCAL_GPIO_WritePin(GPIOA, GPIO_PIN_11, GPIO_PIN_HIGH);
-//	MCAL_GPIO_WritePin(GPIOA, GPIO_PIN_12, GPIO_PIN_LOW);
-
-	//PWM(TIMER2, TIMER_CH1, 50, 500, RCC_CLK_8M);
-	//PWM_Move_Steps(TIMER2, TIMER_CH1, 30000, 50, 500, RCC_CLK_8M);
 	/* Loop forever */
 	while (1) {
 
 
-//		// --------------------- DC Motor Speed Testing (PWM) -----------------------
-//
-//		//		MCAL_GPIO_WritePin(GPIOA, GPIO_PIN_9, GPIO_PIN_HIGH);
-//		//		Delay_Timer3_ms(1000);
-//		//		MCAL_GPIO_WritePin(GPIOA, GPIO_PIN_9, GPIO_PIN_LOW);
-//		//		Delay_Timer3_ms(1000);
-//
-//		//		PWM(TIMER3, TIMER_CH1, counter, 1000, RCC_CLK_8M);
-//		//
-//		//		MCAL_GPIO_WritePin(GPIOA, GPIO_PIN_9, GPIO_PIN_HIGH);
-//		//		MCAL_GPIO_WritePin(GPIOA, GPIO_PIN_10, GPIO_PIN_LOW);
-//		//		Delay_ms(1000);
-//		//
-//		//
-//		//		counter += 10;
-//		//
-//		//		if(counter > 100)
-//		//			counter = 0;
-//
-//		//		Delay_ms(1000);
-//		//		MCAL_GPIO_WritePin(GPIOA, GPIO_PIN_9, GPIO_PIN_LOW);
-//		//		MCAL_GPIO_WritePin(GPIOA, GPIO_PIN_10, GPIO_PIN_HIGH);
-//		//		Delay_ms(3000);
-//
-//		//		PWM(TIMER3, TIMER_CH1, 100, 1000, RCC_CLK_8M);
-//		//
 
-//
-//		// -------------------------- DC Motor Testing ---------------------------------
-//
-//		LCD_enuJumpCursorTo(1, 0);
-//		LCD_enuSendString("START");
-//
-//		HC_SR04_ReadDistance(0,&Ultra1Distance);
-//		HC_SR04_ReadDistance(1,&Ultra2Distance);
-//
-//		LCD_enuJumpCursorTo(1, 0);
-//		LCD_enuSendString("Reading ");
-//
-//		LCD_enuJumpCursorTo(2, 0);
-//		LCD_enuSendString("1st:    ");
-//		LCD_enuJumpCursorTo(2, 5);
-//		LCD_enuDisplayIntNum(Ultra1Distance);
-//
-//		LCD_enuJumpCursorTo(2, 9);
-//		LCD_enuSendString("2nd:    ");
-//		LCD_enuJumpCursorTo(2, 13);
-//		LCD_enuDisplayIntNum(Ultra2Distance);
-//		//
-//		if (Ultra1Distance <= 20) {
-//
-//			MCAL_GPIO_WritePin(GPIOB, GPIO_PIN_7, GPIO_PIN_HIGH);
-//			MCAL_GPIO_WritePin(GPIOB, GPIO_PIN_6, GPIO_PIN_HIGH);
-//
-//			// Timer3 CH2 --> A7  &&&& Timer3 CH1 --> A6
-//
-//			// 9, 10 ---- 11,12
-//			MCAL_GPIO_WritePin(GPIOA, GPIO_PIN_9, GPIO_PIN_HIGH);
-//			MCAL_GPIO_WritePin(GPIOA, GPIO_PIN_10, GPIO_PIN_LOW);
-//			//Delay_ms(1000);
-//			MCAL_GPIO_WritePin(GPIOA, GPIO_PIN_11, GPIO_PIN_HIGH);
-//			MCAL_GPIO_WritePin(GPIOA, GPIO_PIN_12, GPIO_PIN_LOW);
-//			//Delay_ms(3000);
-//
-////					counter += 10;
-////
-////					if(counter > 100)
-////						counter = 0;
-//
-//			Delay_Timer3_ms(3000);
-//
-//			MCAL_GPIO_WritePin(GPIOB, GPIO_PIN_7, GPIO_PIN_LOW);
-//			MCAL_GPIO_WritePin(GPIOB, GPIO_PIN_6, GPIO_PIN_LOW);
-//
-//			Delay_Timer3_ms(1000);
-//
-//			if(Ultra2Distance<=2){
-//				// Move stepper up
-//				MCAL_GPIO_WritePin(GPIOB, GPIO_PIN_9, GPIO_PIN_HIGH);
-//			}else if(Ultra2Distance>=4){
-//				MCAL_GPIO_WritePin(GPIOB, GPIO_PIN_9, GPIO_PIN_LOW);
-//			}
-//
-//			PWM(TIMER2, TIMER_CH1, 50, 500, RCC_CLK_8M);
-//
-//			Delay_Timer3_ms(2500);
-//
-//			Disable_Timer2();
-//
-//		}
-//
-//		Delay_Timer3_ms(10);
-//
+		if(PinStepper_flag == 1)
+		{
+			MCAL_GPIO_WritePin(GPIOA, GPIO_PIN_0, GPIO_PIN_LOW);
+			PinStepper_flag = 0;
+		}
+
+
+		LCD_enuJumpCursorTo(1, 0);
+		LCD_enuSendString("START");
+
+		HC_SR04_ReadDistance(0,&Ultra1Distance);
+		HC_SR04_ReadDistance(1,&Ultra2Distance);
+
+		LCD_enuJumpCursorTo(1, 0);
+		LCD_enuSendString("Reading ");
+
+		LCD_enuJumpCursorTo(2, 0);
+		LCD_enuSendString("1st:    ");
+		LCD_enuJumpCursorTo(2, 5);
+		LCD_enuDisplayIntNum(Ultra1Distance);
+
+		LCD_enuJumpCursorTo(2, 9);
+		LCD_enuSendString("2nd:    ");
+		LCD_enuJumpCursorTo(2, 13);
+		LCD_enuDisplayIntNum(Ultra2Distance);
+		//
+		if (Ultra1Distance <= 5) {
+
+			MCAL_GPIO_WritePin(GPIOB, GPIO_PIN_7, GPIO_PIN_LOW);
+			MCAL_GPIO_WritePin(GPIOB, GPIO_PIN_6, GPIO_PIN_LOW);
+
+			Motor_Move_ForWard(&DC_Motor1, 100);
+			Motor_Move_ForWard(&DC_Motor2, 100);
+
+			Delay_Timer3_ms(3000);
+
+			Motor_TurnOff(&DC_Motor1);
+
+
+
+			Motor_TurnOff(&DC_Motor2);
+
+
+
+
+
+			//
+			Delay_Timer3_ms(1000);
+
+			if(Ultra2Distance<=2){
+				// Move stepper up
+				Stepper_Move_Steps(TIMER2, TIMER_CH1, 8000, 50, 500, Stepper_UP);
+			}else if(Ultra2Distance>=4){
+				Stepper_Move_Steps(TIMER2, TIMER_CH1, 8000, 50, 500, Stepper_Down);
+			}
+			else{
+//				Stepper_Move_Steps(TIMER2, TIMER_CH1, 1500, 50, 500, Stepper_UP);
+
+                // Adjust stepper steps based on the error
+                float error = TARGET_DISTANCE_MAX - Ultra2Distance;
+                int correction_steps = Kp * error;
+
+                // Limit correction steps to avoid excessive adjustments
+                if (correction_steps > 100) {
+                    correction_steps = 100;
+                } else if (correction_steps < -100) {
+                    correction_steps = -100;
+                }
+
+                Stepper_Move_Steps(TIMER2, TIMER_CH1,(uint16_t)(1500 + correction_steps), 50, 500, Stepper_UP);
+
+			}
+
+		}
+
+		Delay_Timer3_ms(10);
+
 	}
 
 }
-
-///**
-// ******************************************************************************
-// * @file           : main.c
-// * @author         : Auto-generated by STM32CubeIDE
-// * @brief          : Main program body
-// ******************************************************************************
-// * @attention
-// *
-// * <h2><center>&copy; Copyright (c) 2023 STMicroelectronics.
-// * All rights reserved.</center></h2>
-// *
-// * This software component is licensed by ST under BSD 3-Clause license,
-// * the "License"; You may not use this file except in compliance with the
-// * License. You may obtain a copy of the License at:
-// *                        opensource.org/licenses/BSD-3-Clause
-// *
-// ******************************************************************************
-// */
-//
-//#if !defined(__SOFT_FP__) && defined(__ARM_FP)
-//  #warning "FPU is not initialized, but the project is compiling for an FPU. Please initialize the FPU before use."
-//#endif
-//
-//
-//// Blink led PORTC_13
-//#include "Stm32_F103C6_gpio_driver.h"
-//#include "Stm32_F103C6_RCC_driver.h"
-//#include "Stm32_F103C6_TIMER_driver.h"
-//#include "Stepper.h"
-//
-//
-//
-//#include "HAL/UltraSonic_HC_SR04/UltraSonic_Interface.h"
-//#include"HAL/DC_Motor/DC_Motor.h"
-//#include "HAL/LCD/LCD_Interface.h"
-//
-//Motor_t motor_1={
-//		.Dc_motor[0].GPIO_PortNumber=GPIOB,
-//		.Dc_motor[0].GPIO_PinNumber=GPIO_PIN_11,
-//		.Dc_motor[0].GPIO_OUTPUT_SPEED=GPIO_SPEED_10MHZ,
-//		.Dc_motor[1].GPIO_PortNumber=GPIOB,
-//		.Dc_motor[1].GPIO_PinNumber=GPIO_PIN_12,
-//		.Dc_motor[1].GPIO_OUTPUT_SPEED=GPIO_SPEED_10MHZ
-//};
-//
-//
-//
-//int main(void)
-//{
-//	RCC_GPIOC_CLK_EN();
-//	RCC_GPIOA_CLK_EN();
-//	RCC_TIMER2_CLK_EN();
-//
-//
-//	//Timer2 CH1 --> A0
-//	PWM(TIMER2,TIMER_CH1,50,500,RCC_CLK_8M);
-//
-//
-//
-//
-//
-//
-//    /* Loop forever */
-//	while(1)
-//	{
-//
-//	}
-//}

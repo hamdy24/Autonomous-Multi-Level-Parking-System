@@ -22,6 +22,8 @@ void Stepper_Init(GPIO_PinConfig_t* DirPin)
 	Global_Stepper_Pin = DirPin->GPIO_PinNumber;
 	MCAL_GPIO_Init(StepperDir_Port, &StepperDir);
 
+	MCAL_GPIO_WritePin(GPIOA, GPIO_PIN_0, GPIO_PIN_LOW);
+
 }
 
 
@@ -29,10 +31,10 @@ void Stepper_Move_Steps(TIMER_Typedef *TIMERx, Timer_Channel ChannelX, uint16_t 
 {
 	switch(Direction)
 	{
-	case Stepper_CCW:
+	case Stepper_Down:
 		MCAL_GPIO_WritePin(StepperDir_Port, Global_Stepper_Pin, GPIO_PIN_LOW);
 		break;
-	case Stepper_CW:
+	case Stepper_UP:
 		MCAL_GPIO_WritePin(StepperDir_Port, Global_Stepper_Pin, GPIO_PIN_HIGH);
 		break;
 	}
