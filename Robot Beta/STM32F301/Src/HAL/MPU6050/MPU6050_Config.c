@@ -29,4 +29,5 @@
 
 
 
+
 #endif /* HAL_MPU6050_MPU6050_CONFIG_C_ */

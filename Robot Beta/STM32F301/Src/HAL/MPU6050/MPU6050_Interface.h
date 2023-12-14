@@ -25,6 +25,11 @@
 
 
 /************************************ Software Interfaces Start *************************************************/
+
+
+ES_t MPU6050_Init(const MPU6050_Config *config);
+ES_t MPU6050_ReadData(MPU6050_Data *data);
+
 /************************************ Software Interfaces END  *************************************************/
 
 

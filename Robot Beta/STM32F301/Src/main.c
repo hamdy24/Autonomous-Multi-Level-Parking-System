@@ -103,7 +103,6 @@ int main(void) {
 	while (1) {
 
 
-
 		if(PinStepper_flag == 1)
 		{
 			MCAL_GPIO_WritePin(GPIOA, GPIO_PIN_0, GPIO_PIN_LOW);
@@ -138,7 +137,7 @@ int main(void) {
 			Motor_Move_ForWard(&DC_Motor1, 100);
 			Motor_Move_ForWard(&DC_Motor2, 100);
 
-			Delay_Timer3_ms(3000);
+			Delay_Timer3_ms(2000);
 
 			Motor_TurnOff(&DC_Motor1);
 			Motor_TurnOff(&DC_Motor2);
@@ -146,14 +145,15 @@ int main(void) {
 			Delay_Timer3_ms(1000);
 
 			if(Ultra2Distance<=2){
+				// 8000 =~ 2cm
 				// Move stepper up
 				Stepper_Move_Steps(TIMER2, TIMER_CH1, 8000, 50, 500, Stepper_UP);
 
-			}else if(Ultra2Distance>=4){
+			}else if(Ultra2Distance>=4){ // 5
 				// Move stepper down
 				Stepper_Move_Steps(TIMER2, TIMER_CH1, 8000, 50, 500, Stepper_Down);
 
-			}
+			} // 3
 			else{
 
 				// Calculate error
@@ -188,10 +188,12 @@ int main(void) {
 					} else if (correction_steps < -100) {
 						correction_steps = -100;
 					}
-
 					Stepper_Move_Steps(TIMER2, TIMER_CH1,(uint16_t)(1500 + correction_steps), 50, 500, Stepper_UP);
 			        // Update previous error for next iteration
 			        error_previous = error;
+
+//					Delay_Timer3_ms(1000);
+
 					// re-read the distance
 					HC_SR04_ReadDistance(1,&Ultra2Distance);
 					LCD_enuJumpCursorTo(2, 9);
@@ -202,7 +204,7 @@ int main(void) {
 					// re-Calculate error
 					error = TARGET_DISTANCE_MAX - Ultra2Distance;
 
-				}while(error);
+				}while(error);// control
 
 			}
 

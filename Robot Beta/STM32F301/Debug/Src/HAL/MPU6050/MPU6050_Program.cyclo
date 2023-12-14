@@ -1,0 +1,2 @@
+../Src/HAL/MPU6050/MPU6050_Program.c:27:6:MPU6050_Init	1
+../Src/HAL/MPU6050/MPU6050_Program.c:33:6:MPU6050_ReadData	2
