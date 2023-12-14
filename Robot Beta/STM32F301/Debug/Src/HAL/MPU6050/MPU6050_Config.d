@@ -1,1 +1,0 @@
-Src/HAL/MPU6050/MPU6050_Config.o: ../Src/HAL/MPU6050/MPU6050_Config.c
