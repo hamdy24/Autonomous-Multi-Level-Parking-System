@@ -1,10 +1,11 @@
 #include <ESP8266WiFi.h>
 #include <SoftwareSerial.h>
 
-#define RX_PIN 13  // Define RX pin
-#define TX_PIN 15  // Define TX pin
+#define RX_PIN 14  // Define RX pin
+#define TX_PIN 12  // Define TX pin
 
-SoftwareSerial espSerial(RX_PIN, TX_PIN); // Create a SoftwareSerial object
+SoftwareSerial espSerial(RX_PIN, TX_PIN,false); // Create a SoftwareSerial object
+
 
 const char* ssid = "Hamdy";
 const char* password = "Hamdy24@wifi";
@@ -15,6 +16,8 @@ WiFiClient client;
 // #define SERIAL_PORT Serial1 // Assuming your device is connected to Serial1
 
 bool sequenceDetected = false;
+
+uint8_t Buffer[200] ;
 
 void setup() {
     Serial.begin(115200);
@@ -34,16 +37,20 @@ void setup() {
     delay(1000);
 
     if (client.connect(serverIP, serverPort)) {
-        // Serial.println("Connected to server");
+        Serial.println("Connected to server");
         // Client will receive data from server
-        while (client.connected() && !sequenceDetected) {
+        while (client.connected() ) {
             while (client.available() > 0) {
               // while (!sequenceDetected) {
                 // Read data from the server
-                String dataFromServer = client.readStringUntil(0xff);
-                // Send data to the device via Serial
-                 espSerial.write("dataFromServer");
-                 espSerial.print(dataFromServer);
+                client.read(Buffer,6);
+    
+                for(int i =0; i<6;i++){
+                  //  client.read(Buffer,1); 
+                   espSerial.println(Buffer[i]);
+                   Serial.println(Buffer[i]);
+                }
+
 
                 // Wait for response from the device
                 while (espSerial.available() == 0) {
