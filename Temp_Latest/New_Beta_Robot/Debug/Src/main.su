@@ -1,0 +1,2 @@
+../Src/main.c:68:5:main	104	static
+../Src/main.c:293:6:Clock_Init	8	static
