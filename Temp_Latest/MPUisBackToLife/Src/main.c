@@ -55,6 +55,8 @@ char pitch_str[5];
 char roll_str[5];
 
 
+void Motor_Move_Left(Motor_Config_t *Motor1, Motor_Config_t *Motor2);
+void Motor_Move_Right(Motor_Config_t *Motor1, Motor_Config_t *Motor2);
 
 
 
@@ -82,15 +84,15 @@ int main(void) {
 	Clock_Init();
 
 
-//	UART_Config UART_Cfg;
-//	UART_Cfg.BaudRate = UART_BaudRate_9600;
-//	UART_Cfg.HWFlowCtrl = UART_HWFlowCtrl_NONE;
-//	UART_Cfg.IRQ_Enable = UART_IRQ_Enable_NONE;
-//	UART_Cfg.P_IRQ_CallBack = NULL;
-//	UART_Cfg.Parity = UART_Parity_NONE;
-//	UART_Cfg.Payload_length = UART_Payload_Length_8B;
-//	UART_Cfg.StopBits = UART_StopBits_1;
-//	UART_Cfg.USART_Mode = UART_Mode_Tx_Rx;
+	UART_Config UART_Cfg;
+	UART_Cfg.BaudRate = UART_BaudRate_9600;
+	UART_Cfg.HWFlowCtrl = UART_HWFlowCtrl_NONE;
+	UART_Cfg.IRQ_Enable = UART_IRQ_Enable_NONE;
+	UART_Cfg.P_IRQ_CallBack = NULL;
+	UART_Cfg.Parity = UART_Parity_NONE;
+	UART_Cfg.Payload_length = UART_Payload_Length_8B;
+	UART_Cfg.StopBits = UART_StopBits_1;
+	UART_Cfg.USART_Mode = UART_Mode_Tx_Rx;
 
 	// 			Usage
 	// -- Timer 2 for delay purposes ?
@@ -108,50 +110,107 @@ int main(void) {
 
 	// Should be uncommented
 
-	//	MCAL_UART_Init(USART2, &UART_Cfg);
+	MCAL_UART_Init(USART2, &UART_Cfg);
 	//
-	//	MCAL_UART_GPIO_SetPins(USART2);
+	MCAL_UART_GPIO_SetPins(USART2);
 
 	//	TIMER2_Init(RCC_CLK_36M);
 
 
 	// For MPU
-	//	MPU6050_Init();
-	//	MPU6050_CalculateError();
+	MPU6050_Init();
+	MPU6050_CalculateError();
 
 
 
+	Motor_Config_t DC_Motor1 =
+	{
+			.DC_Pin1Number = GPIO_PIN_4,
+			.DC_Pin2Number = GPIO_PIN_5,
+			.DC_PortNumber1 = GPIOA,
+			.DC_PortNumber2 = GPIOA,
+			.PWM_Timer = TIMER3, //A6
+			.PWM_Channel = TIMER_CH1
+	};
+	Motor_Config_t DC_Motor2 =
+	{
+			.DC_Pin1Number = GPIO_PIN_7,
+			.DC_Pin2Number = GPIO_PIN_0,
+			.DC_PortNumber1 = GPIOA,
+			.DC_PortNumber2 = GPIOB,
+			.PWM_Timer = TIMER3, // B1
+			.PWM_Channel = TIMER_CH4
+	};
+
+
+	Motor_intialize(&DC_Motor1);
+
+	Motor_intialize(&DC_Motor2);
 
 	GPIO_PinConfig_t StepperDirPin = {
 			.GPIO_PinNumber = GPIO_PIN_9,
 			.GPIO_MODE = GPIO_MODE_OUTPUT_PUSHPULL,
 			.GPIO_OUTPUT_SPEED = GPIO_SPEED_2MHZ
 	};
+
+	GPIO_PinConfig_t IR = {
+			.GPIO_PinNumber = GPIO_PIN_13,
+			.GPIO_MODE = GPIO_MODE_INPUT_FLOATING,
+			.GPIO_OUTPUT_SPEED = GPIO_SPEED_2MHZ
+	};
+
+	MCAL_GPIO_Init(GPIOC, &IR);
 	Stepper_Init(&StepperDirPin);
 
 
 	while (1) {
-		//		MPU6050_GetReadings(&roll_str, &pitch_str, &yaw_str);
-		//
-		//		MCAL_UART_SendString(USART2, "Roll: ", Enable);
-		//		MCAL_UART_SendString(USART2, roll_str, Enable);
-		//
-		//		MCAL_UART_SendString(USART2, "Pitch: ", Enable);
-		//		MCAL_UART_SendString(USART2, pitch_str, Enable);
-		//
-		//		MCAL_UART_SendString(USART2, "Yaw: ", Enable);
-		//		MCAL_UART_SendString(USART2, yaw_str, Enable);
+		//		uint8_t IR_Reading = MCAL_GPIO_ReadPin(GPIOC, GPIO_PIN_13);
+		MPU6050_GetReadings(&roll_str, &pitch_str, &yaw_str);
+
+		MCAL_UART_SendString(USART2, "Roll: ", Enable);
+		MCAL_UART_SendString(USART2, roll_str, Enable);
+
+		MCAL_UART_SendString(USART2, "Pitch: ", Enable);
+		MCAL_UART_SendString(USART2, pitch_str, Enable);
+
+		MCAL_UART_SendString(USART2, "Yaw: ", Enable);
+		MCAL_UART_SendString(USART2, yaw_str, Enable);
 
 
-		// B1, B9, A6
-		// Timer3 --> CH4
-//		Stepper_Move_Steps(TIMER3, TIMER_CH4, 200, 50, 500, Stepper_UP);  // B1 Checked
-//		Stepper_Move_Steps(TIMER3, TIMER_CH1, 200, 50, 500, Stepper_UP);  // A6 Checked
-//		Stepper_Move_Steps(TIMER4, TIMER_CH4, 200, 50, 500, Stepper_UP);  // B9
-		Stepper_Move_Steps(TIMER4, TIMER_CH3, 200, 50, 500, Stepper_UP);  // B8 Checked
 
-		Delay_ms(1000);
+
+		//		if(IR_Reading == 1){
+		Motor_Move_ForWard(&DC_Motor1, 100);
+		Motor_Move_ForWard(&DC_Motor2, 100);
+		//
+		//			Delay_ms(20);
+		//
+		////			Motor_TurnOff(&DC_Motor1);
+		////			Motor_TurnOff(&DC_Motor2);
+		//			// B1, B9, A6
+		//			// Timer3 --> CH4
+		//			//		Stepper_Move_Steps(TIMER3, TIMER_CH4, 200, 50, 500, Stepper_UP);  // B1 Checked
+		//			//		Stepper_Move_Steps(TIMER3, TIMER_CH1, 200, 50, 500, Stepper_UP);  // A6 Checked
+		Stepper_Move_Steps(TIMER4, TIMER_CH4, 200, 50, 500, Stepper_UP);  // B9
+		//			//		Stepper_Move_Steps(TIMER4, TIMER_CH3, 200, 50, 500, Stepper_UP);  // B8 Checked
+		//
+		//			Delay_ms(20);
+		//		}
 
 	}
+}
+
+
+void Motor_Move_Right(Motor_Config_t *Motor1, Motor_Config_t *Motor2)
+{
+	Motor_TurnOff(Motor1);
+	Motor_Move_ForWard(Motor2, 100);
+}
+
+
+void Motor_Move_Left(Motor_Config_t *Motor1, Motor_Config_t *Motor2)
+{
+	Motor_Move_ForWard(Motor1, 100);
+	Motor_TurnOff(Motor1);
 }
 

@@ -9,9 +9,10 @@
 ../Src/Stm32_F103C6_Drivers/TIMER/Stm32_F103C6_TIMER_driver.c:474:10:Get_TIMER2_Counter	1
 ../Src/Stm32_F103C6_Drivers/TIMER/Stm32_F103C6_TIMER_driver.c:479:10:Get_TIMER3_Counter	1
 ../Src/Stm32_F103C6_Drivers/TIMER/Stm32_F103C6_TIMER_driver.c:484:6:TIMER2_Stop	1
-../Src/Stm32_F103C6_Drivers/TIMER/Stm32_F103C6_TIMER_driver.c:490:6:TIMER3_Stop	1
-../Src/Stm32_F103C6_Drivers/TIMER/Stm32_F103C6_TIMER_driver.c:497:6:TIMER4_Stop	1
-../Src/Stm32_F103C6_Drivers/TIMER/Stm32_F103C6_TIMER_driver.c:528:6:PWM_Move_Steps	23
-../Src/Stm32_F103C6_Drivers/TIMER/Stm32_F103C6_TIMER_driver.c:864:6:TIM2_IRQHandler	3
-../Src/Stm32_F103C6_Drivers/TIMER/Stm32_F103C6_TIMER_driver.c:886:6:TIM3_IRQHandler	3
-../Src/Stm32_F103C6_Drivers/TIMER/Stm32_F103C6_TIMER_driver.c:908:6:TIM4_IRQHandler	3
+../Src/Stm32_F103C6_Drivers/TIMER/Stm32_F103C6_TIMER_driver.c:490:6:TIMER2_Start	1
+../Src/Stm32_F103C6_Drivers/TIMER/Stm32_F103C6_TIMER_driver.c:496:6:TIMER3_Stop	1
+../Src/Stm32_F103C6_Drivers/TIMER/Stm32_F103C6_TIMER_driver.c:503:6:TIMER4_Stop	1
+../Src/Stm32_F103C6_Drivers/TIMER/Stm32_F103C6_TIMER_driver.c:534:6:PWM_Move_Steps	23
+../Src/Stm32_F103C6_Drivers/TIMER/Stm32_F103C6_TIMER_driver.c:870:6:TIM2_IRQHandler	3
+../Src/Stm32_F103C6_Drivers/TIMER/Stm32_F103C6_TIMER_driver.c:892:6:TIM3_IRQHandler	3
+../Src/Stm32_F103C6_Drivers/TIMER/Stm32_F103C6_TIMER_driver.c:914:6:TIM4_IRQHandler	3

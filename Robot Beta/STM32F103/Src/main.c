@@ -16,6 +16,12 @@
  ******************************************************************************
  */
 
+// bootloader 0x80000000
+
+// code 0x8008000
+
+// backup
+
 #include <stdint.h>
 
 #if !defined(__SOFT_FP__) && defined(__ARM_FP)

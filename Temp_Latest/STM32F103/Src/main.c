@@ -16,6 +16,12 @@
  ******************************************************************************
  */
 
+// bootloader 0x80000000
+
+// code 0x8008000
+
+// backup
+
 #include <stdint.h>
 
 #if !defined(__SOFT_FP__) && defined(__ARM_FP)
@@ -47,14 +53,28 @@ float Kd = 0.05; 	// Derivative gain
 int main(void) {
 
 
-
+	Motor_Config_t DC_Motor1 =
+	{
+			.DC_Pin1Number = GPIO_PIN_9,
+			.DC_Pin2Number = GPIO_PIN_10,
+			.DC_PortNumber = GPIOA,
+			.PWM_Timer = TIMER4,
+			.PWM_Channel = TIMER_CH2
+	};
+	Motor_Config_t DC_Motor2 =
+	{
+			.DC_Pin1Number = GPIO_PIN_11,
+			.DC_Pin2Number = GPIO_PIN_12,
+			.DC_PortNumber = GPIOA,
+			.PWM_Timer = TIMER4,
+			.PWM_Channel = TIMER_CH1
+	};
 
 
 	GPIO_PinConfig_t StepperDirPin = {
 			.GPIO_PinNumber = GPIO_PIN_9,
 			.GPIO_MODE = GPIO_MODE_OUTPUT_PUSHPULL,
-			.GPIO_OUTPUT_SPEED = GPIO_SPEED_2MHZ
-	};
+			.GPIO_OUTPUT_SPEED = GPIO_SPEED_2MHZ };
 
 
 	//RCC_GPIOC_CLK_EN();
@@ -62,15 +82,29 @@ int main(void) {
 	RCC_GPIOB_CLK_EN();
 	RCC_GPIOA_CLK_EN();
 
-	// For delay purposes
-	RCC_TIMER2_CLK_EN();
-	TIMER2_Init(RCC_CLK_8M);
+	RCC_TIMER3_CLK_EN();
 
+	TIMER3_Init(RCC_CLK_8M);
 
+	Motor_intialize(&DC_Motor1);
+
+	Motor_intialize(&DC_Motor2);
+
+	LCD_enuInit(&LCD_Configs);
+
+	HC_SR04_Init(UltraSonic_Configs);
 
 	Stepper_Init(&StepperDirPin);
 
+	uint32_t Ultra1Distance = 0;
+	uint32_t Ultra2Distance = 0;
 
+	float integral = 0;
+	float derivative = 0;
+
+	float error = 0;
+	float error_previous = 0;
+	int correction_steps = 0;
 	/* Loop forever */
 	while (1) {
 
@@ -82,21 +116,107 @@ int main(void) {
 		}
 
 
+		LCD_enuJumpCursorTo(1, 0);
+		LCD_enuSendString("START");
 
-		// PWM Checking
+		HC_SR04_ReadDistance(0,&Ultra1Distance);
+		HC_SR04_ReadDistance(1,&Ultra2Distance);
 
+		LCD_enuJumpCursorTo(1, 0);
+		LCD_enuSendString("Reading ");
 
-		// B1, B9, A6
-		// Timer3 --> CH4
-//		Stepper_Move_Steps(TIMER3, TIMER_CH4, 200, 50, 500, Stepper_UP);  // B1 Checked
-//		Stepper_Move_Steps(TIMER3, TIMER_CH1, 200, 50, 500, Stepper_UP);  // A6 Checked
-//		Stepper_Move_Steps(TIMER4, TIMER_CH4, 200, 50, 500, Stepper_UP);  // B9
-		Stepper_Move_Steps(TIMER4, TIMER_CH3, 200, 50, 500, Stepper_UP);  // B8 Checked
+		LCD_enuJumpCursorTo(2, 0);
+		LCD_enuSendString("1st:    ");
+		LCD_enuJumpCursorTo(2, 5);
+		LCD_enuDisplayIntNum(Ultra1Distance);
 
+		LCD_enuJumpCursorTo(2, 9);
+		LCD_enuSendString("2nd:    ");
+		LCD_enuJumpCursorTo(2, 13);
+		LCD_enuDisplayIntNum(Ultra2Distance);
 
+		if (Ultra1Distance <= 5) {
 
+			MCAL_GPIO_WritePin(GPIOB, GPIO_PIN_7, GPIO_PIN_LOW);
+			MCAL_GPIO_WritePin(GPIOB, GPIO_PIN_6, GPIO_PIN_LOW);
 
-		Delay_ms(1000);
+			Motor_Move_ForWard(&DC_Motor1, 100);
+			Motor_Move_ForWard(&DC_Motor2, 100);
+
+			Delay_Timer3_ms(2000);
+
+			Motor_TurnOff(&DC_Motor1);
+			Motor_TurnOff(&DC_Motor2);
+
+			Delay_Timer3_ms(1000);
+
+			if(Ultra2Distance<=2){
+				// 8000 =~ 2cm
+				// Move stepper up
+				Stepper_Move_Steps(TIMER2, TIMER_CH1, 8000, 50, 500, Stepper_UP);
+
+			}else if(Ultra2Distance>=4){ // 5
+				// Move stepper down
+				Stepper_Move_Steps(TIMER2, TIMER_CH1, 8000, 50, 500, Stepper_Down);
+
+			} // 3
+			else{
+
+				// Calculate error
+				error = TARGET_DISTANCE_MAX - Ultra2Distance;
+
+				do{
+					// Proportional term
+					float P = Kp * error;
+
+					// Integral term
+					if (Ki != 0) {
+						integral += error;
+						if (integral > 100)
+							integral = 100;
+						else if (integral < -100)
+							integral = -100;
+					} else {
+						integral = 0;
+					}
+					float I = Ki * integral;
+
+					// Derivative term
+					derivative = error - error_previous;
+					float D = Kd * derivative;
+
+					// Calculate PID output
+					correction_steps = P + I + D;
+
+					// Limit correction steps to avoid excessive adjustments
+					if (correction_steps > 100) {
+						correction_steps = 100;
+					} else if (correction_steps < -100) {
+						correction_steps = -100;
+					}
+					Stepper_Move_Steps(TIMER2, TIMER_CH1,(uint16_t)(1500 + correction_steps), 50, 500, Stepper_UP);
+			        // Update previous error for next iteration
+			        error_previous = error;
+
+//					Delay_Timer3_ms(1000);
+
+					// re-read the distance
+					HC_SR04_ReadDistance(1,&Ultra2Distance);
+					LCD_enuJumpCursorTo(2, 9);
+					LCD_enuSendString("2nd:    ");
+					LCD_enuJumpCursorTo(2, 13);
+					LCD_enuDisplayIntNum(Ultra2Distance);
+
+					// re-Calculate error
+					error = TARGET_DISTANCE_MAX - Ultra2Distance;
+
+				}while(error);// control
+
+			}
+
+		}
+
+		Delay_Timer3_ms(10);
 
 	}
 

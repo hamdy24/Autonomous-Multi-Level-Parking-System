@@ -71,8 +71,8 @@ all: main-build
 main-build: BetaRobot.elf secondary-outputs
 
 # Tool invocations
-BetaRobot.elf BetaRobot.map: $(OBJS) $(USER_OBJS) C:\Users\Abdallah\Desktop\STM32F103\STM32F103C8TX_FLASH.ld makefile objects.list $(OPTIONAL_TOOL_DEPS)
-	arm-none-eabi-gcc -gdwarf-2 -o "BetaRobot.elf" @"objects.list" $(USER_OBJS) $(LIBS) -mcpu=cortex-m3 -T"C:\Users\Abdallah\Desktop\STM32F103\STM32F103C8TX_FLASH.ld" --specs=nosys.specs -Wl,-Map="BetaRobot.map" -Wl,--gc-sections -static --specs=nano.specs -mfloat-abi=soft -mthumb -Wl,--start-group -lc -lm -Wl,--end-group
+BetaRobot.elf BetaRobot.map: $(OBJS) $(USER_OBJS) D:\Graduation\ Project\Autonomous-Parking-System\Robot\ Beta\STM32F103\STM32F103C8TX_FLASH.ld makefile objects.list $(OPTIONAL_TOOL_DEPS)
+	arm-none-eabi-gcc -o "BetaRobot.elf" @"objects.list" $(USER_OBJS) $(LIBS) -mcpu=cortex-m3 -T"D:\Graduation Project\Autonomous-Parking-System\Robot Beta\STM32F103\STM32F103C8TX_FLASH.ld" --specs=nosys.specs -Wl,-Map="BetaRobot.map" -Wl,--gc-sections -static --specs=nano.specs -mfloat-abi=soft -mthumb -Wl,--start-group -lc -lm -Wl,--end-group
 	@echo 'Finished building target: $@'
 	@echo ' '
 

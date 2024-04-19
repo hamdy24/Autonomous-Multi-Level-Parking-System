@@ -737,7 +737,7 @@ void PWM_Move_Steps(TIMER_Typedef *TIMERx, Timer_Channel ChannelX, uint16_t step
 			TIMERx->CCER |= (1<<8);   // Capture/Compare 2 output enable
 			TIMERx->CCMR2 |= (0b110 << 4);
 			TIMERx->CCR3 = (top_Value * dutyCycle / 100);
-			TIMERx->DIER |= (0b0001 << 0);
+			TIMERx->DIER |= (0b1001 << 0);
 			break;
 		}
 
@@ -749,7 +749,7 @@ void PWM_Move_Steps(TIMER_Typedef *TIMERx, Timer_Channel ChannelX, uint16_t step
 			TIMERx->CCER |= (1<<12);   // Capture/Compare 2 output enable
 			TIMERx->CCMR2 |= (0b110 << 12);
 			TIMERx->CCR4 = (top_Value * dutyCycle / 100);
-			TIMERx->DIER |= (0b00001 << 0);
+			TIMERx->DIER |= (0b10001 << 0);
 			break;
 		}
 		}
@@ -804,7 +804,7 @@ void PWM_Move_Steps(TIMER_Typedef *TIMERx, Timer_Channel ChannelX, uint16_t step
 			TIMERx->CCER |= (1<<8);   // Capture/Compare 2 output enable
 			TIMERx->CCMR2 |= (0b110 << 4);
 			TIMERx->CCR3 = (top_Value * dutyCycle / 100);
-			TIMERx->DIER |= (0b0001 << 0);
+			TIMERx->DIER |= (0b1001 << 0);
 			break;
 		}
 
@@ -816,7 +816,7 @@ void PWM_Move_Steps(TIMER_Typedef *TIMERx, Timer_Channel ChannelX, uint16_t step
 			TIMERx->CCER |= (1<<12);   // Capture/Compare 2 output enable
 			TIMERx->CCMR2 |= (0b110 << 12);
 			TIMERx->CCR4 = (top_Value * dutyCycle / 100);
-			TIMERx->DIER |= (0b00001 << 0);
+			TIMERx->DIER |= (0b10001 << 0);
 			break;
 		}
 		}
@@ -880,49 +880,6 @@ void TIM2_IRQHandler()
 	}
 }
 
-
-
-
-void TIM3_IRQHandler()
-{
-	if(stepper_Flag == 1)
-	{
-		TIMER3->SR &= ~(1<<0);
-		TIMER3->SR &= ~(1<<1);  // Capture/compare 1 interrupt flag
-
-		if(stepper_Steps != 0){
-			stepper_Steps--;
-		}else{
-			stepper_Flag = 0;
-			TIMER3->CR1 &= ~(1<<0);   // Disable timer
-			PinStepper_flag = 1;
-		}
-	}else{   // For further usage rather than stepper
-
-	}
-}
-
-
-
-
-void TIM4_IRQHandler()
-{
-	if(stepper_Flag == 1)
-	{
-		TIMER4->SR &= ~(1<<0);
-		TIMER4->SR &= ~(1<<1);  // Capture/compare 1 interrupt flag
-
-		if(stepper_Steps != 0){
-			stepper_Steps--;
-		}else{
-			stepper_Flag = 0;
-			TIMER4->CR1 &= ~(1<<0);   // Disable timer
-			PinStepper_flag = 1;
-		}
-	}else{   // For further usage rather than stepper
-
-	}
-}
 
 
 

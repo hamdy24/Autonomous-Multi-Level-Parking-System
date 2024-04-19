@@ -37,7 +37,8 @@
 typedef struct{
 	uint16_t DC_Pin1Number;
 	uint16_t DC_Pin2Number;
-	GPIO_TypeDef* DC_PortNumber;
+	GPIO_TypeDef* DC_PortNumber1;
+	GPIO_TypeDef* DC_PortNumber2;
 	TIMER_Typedef* PWM_Timer;
 	Timer_Channel PWM_Channel;
 }Motor_Config_t;

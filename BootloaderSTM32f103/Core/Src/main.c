@@ -92,17 +92,29 @@ int main(void)
   MX_CRC_Init();
   MX_USART1_UART_Init();
   /* USER CODE BEGIN 2 */
-	BL_SendMessage("Bootloader Started");
+
+//  BL_SendMessage("Bootloader Started");
+
+  char ConnInitiate = 0;
+
   /* USER CODE END 2 */
 
   /* Infinite loop */
   /* USER CODE BEGIN WHILE */
   while (1)
   {
+	  HAL_UART_Receive(&huart2, (uint8_t*)&ConnInitiate, 1, HAL_MAX_DELAY);
+	  if(ConnInitiate == 1 || ConnInitiate == '1' || ConnInitiate == 49){
+		  ConnInitiate = 1;
+//		  BL_SendMessage("Started Process");
+//		  HAL_UART_Transmit(BL_COMM_PORT,(uint8_t*)&ConnInitiate,1,HAL_MAX_DELAY);
+		  BL_FeatchHostCommand();
+	  }else{
+//		  BL_SendMessage("Waiting\n");
+	  }
     /* USER CODE END WHILE */
 
     /* USER CODE BEGIN 3 */
-	  BL_FeatchHostCommand();
   }
   /* USER CODE END 3 */
 }

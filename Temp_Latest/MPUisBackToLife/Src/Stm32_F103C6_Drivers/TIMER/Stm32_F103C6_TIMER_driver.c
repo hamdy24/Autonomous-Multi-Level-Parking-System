@@ -487,6 +487,12 @@ void TIMER2_Stop()
 	TIMER2->CR1 &= ~(1<<0);
 }
 
+void TIMER2_Start()
+{
+	// Bit 0 CEN: Counter enable
+	TIMER2->CR1 |= (1<<0);
+}
+
 void TIMER3_Stop()
 {
 	// Bit 0 CEN: Counter enable

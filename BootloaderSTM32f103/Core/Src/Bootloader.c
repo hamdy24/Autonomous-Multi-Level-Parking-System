@@ -31,24 +31,28 @@ BL_status BL_FeatchHostCommand()
 	HAL_StatusTypeDef Hal_status=HAL_ERROR;
 	uint8_t DataLen=0;
 	memset(Host_buffer,0,HOSTM_MAX_SIZE);
-	Hal_status = HAL_UART_Receive(BL_COMM_PORT,Host_buffer,1,HAL_MAX_DELAY);
-	HAL_UART_Transmit(BL_DEBUG_PORT,(uint8_t*)Host_buffer,sizeof(Host_buffer),HAL_MAX_DELAY);
+
+	Hal_status = HAL_UART_Receive(BL_COMM_PORT,Host_buffer,6,HAL_MAX_DELAY);
+//	BL_SendMessage("In Fetch");
+	HAL_UART_Transmit(BL_DEBUG_PORT,(uint8_t*)&Host_buffer[0],6,HAL_MAX_DELAY);
+
+	DataLen = Host_buffer[0];
+
 	if(Hal_status != HAL_OK)
 	{
-		uint8_t er = 'x';
-		HAL_UART_Transmit(BL_DEBUG_PORT,(uint8_t*)&er,1,HAL_MAX_DELAY);
+		BL_SendMessage("Test1");
 		status = BL_NACK;
 	}
 	else{
-		DataLen = Host_buffer[0];
-		Hal_status = HAL_UART_Receive(BL_COMM_PORT,&Host_buffer[1],DataLen,HAL_MAX_DELAY);
-		HAL_UART_Transmit(BL_DEBUG_PORT,(uint8_t*)&Host_buffer[1],sizeof(Host_buffer)-1,HAL_MAX_DELAY);
+
 		if(Hal_status != HAL_OK)
 		{
+			BL_SendMessage("second failed");
 			status = BL_NACK;
 		}
 		else{
-			switch(Host_buffer[1])
+			BL_SendMessage("All PASS %d",Host_buffer[1]);
+			switch((int)Host_buffer[1])
 			{
 
 			case CBL_GET_VER_CMD: BL_Get_Version(Host_buffer);break;
@@ -82,8 +86,11 @@ static void BL_Get_Version(uint8_t *Host_buffer)
 	uint8_t Veraion[4]={CBL_VENDOR_ID,CBL_SW_MAJOR_VERSION,CBL_SW_MINOR_VERSION,CBL_SW_PATCH_VERSION};
 	uint16_t Host_Packet_Len=0;
 	uint32_t CRC_valu=0;
-	Host_Packet_Len =  Host_buffer[0]+1;
+	Host_Packet_Len = 6;// Host_buffer[0]+1 ;
 	CRC_valu = *(uint32_t*)(Host_buffer+Host_Packet_Len -4);
+
+	BL_SendMessage("Reached GET VER");
+
 	if(CRC_VERIFING_PASS == BL_CRC_verfiy((uint8_t*)&Host_buffer[0],Host_Packet_Len-4,CRC_valu))
 	{
 		BL_Send_ACK(4);

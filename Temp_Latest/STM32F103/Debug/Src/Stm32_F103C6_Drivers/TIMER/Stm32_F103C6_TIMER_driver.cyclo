@@ -13,5 +13,3 @@
 ../Src/Stm32_F103C6_Drivers/TIMER/Stm32_F103C6_TIMER_driver.c:497:6:TIMER4_Stop	1
 ../Src/Stm32_F103C6_Drivers/TIMER/Stm32_F103C6_TIMER_driver.c:528:6:PWM_Move_Steps	23
 ../Src/Stm32_F103C6_Drivers/TIMER/Stm32_F103C6_TIMER_driver.c:864:6:TIM2_IRQHandler	3
-../Src/Stm32_F103C6_Drivers/TIMER/Stm32_F103C6_TIMER_driver.c:886:6:TIM3_IRQHandler	3
-../Src/Stm32_F103C6_Drivers/TIMER/Stm32_F103C6_TIMER_driver.c:908:6:TIM4_IRQHandler	3
