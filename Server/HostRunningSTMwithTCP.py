@@ -1,9 +1,14 @@
+import socket
 import serial
 import struct
 import os
 import sys
 import glob
 from time import sleep
+
+''' TCP'''
+HOST = '0.0.0.0'
+PORT = 8001
 
 ''' Bootloader Commands '''
 CBL_GET_VER_CMD              = 0x10
@@ -48,54 +53,66 @@ def Check_Serial_Ports():
     
     return Serial_Ports
 
-def Serial_Port_Configuration(Port_Number):
-    global Serial_Port_Obj
+def TCP_Configuration():
+    global serverIP, serverPort, conn
+
     try:
-        Serial_Port_Obj = serial.Serial(Port_Number, 115200, timeout = 2)
-    except:
-        print("\nError !! That was not a valid port")
-    
-        Port_Number = Check_Serial_Ports()
-        if(not Port_Number):
-            print("\nError !! No ports Detected")
-        else:
-            print("\nHere are some available ports on your PC. Try Again !!")
-            print("\n   ", Port_Number)
+        conn.connect(serverIP, serverPort)
+        print("Connected to server")
+    except Exception as e:
+        print("Connection failed:", e)
         return -1
-    
-    if Serial_Port_Obj.is_open:
-        print("Port Open Success \n")
-    else:
-        print("Port Open Failed \n")
 
-def Write_Data_To_Serial_Port(Value, Length):
-    _data = struct.pack('>B', Value)
-    if(verbose_mode):
-        Value = bytearray(_data)
-        print("   "+"0x{:02x}".format(Value[0]), end = ' ')
-        if(Memory_Write_Active and (not verbose_mode)):
-            print("#", end = ' ')
-        Serial_Port_Obj.write(_data)
+    return 0
 
-def Read_Serial_Port(Data_Len):
-    
-    Serial_Value = Serial_Port_Obj.read(Data_Len)
-    Serial_Value_len = len(Serial_Value)
-    while Serial_Value_len <= 0:
-        Serial_Value = Serial_Port_Obj.read(Data_Len)
-        Serial_Value_len = len(Serial_Value)
-        print("Waiting Replay from the Bootloader")
-    return Serial_Value
-    
-    '''
-    Serial_Value = Serial_Port_Obj.read(Data_Len)
-    return Serial_Value
-    '''
+def Write_Data_To_TCP(Value, Length):
+
+    bufferArray = bytearray(Value)
+    # for x in Value:
+    #     _data = struct.pack('>B', x)
+    #     bufferArray.append(_data)
+
+    # Convert Value to bytes
+    # _data = struct.pack('>B', Value)
+    if verbose_mode:
+        # Print verbose output
+        # Value = bytearray(_data)
+        print("   "+"0x{:02x}".format(Value[0]), end=' ')
+        if Memory_Write_Active and (not verbose_mode):
+            print("#", end=' ')
+
+    try:
+        # Send data over the TCP connection
+        conn.sendall(bufferArray)
+        print(bufferArray)
+        # print(Value)
+    except Exception as e:
+        print("Error sending data:", e)
+
+def Read_TCP(Data_Len):
+# Set timeout on the socket
+    conn.settimeout(3)
+
+    terminateCondition = 0
+
+    while True:
+        try:
+            Serial_Value = conn.recv(Data_Len)
+            print(Serial_Value)
+            if len(Serial_Value) > 0:
+                return Serial_Value
+        except socket.timeout:
+            print("Waiting Replay from the Bootloader")
+            terminateCondition = terminateCondition + 1
+            if terminateCondition > 8:
+                return 0
+            else :
+                pass
 
 def Read_Data_From_Serial_Port(Command_Code):
     Length_To_Follow = 0
     
-    BL_ACK = Read_Serial_Port(2)
+    BL_ACK = Read_TCP(2)
     if(len(BL_ACK)):
         BL_ACK_Array = bytearray(BL_ACK)
         if(BL_ACK_Array[0] == 0xCD):
@@ -123,25 +140,25 @@ def Read_Data_From_Serial_Port(Command_Code):
             sys.exit()
         
 def Process_CBL_GET_VER_CMD(Data_Len):
-    Serial_Data = Read_Serial_Port(Data_Len)
+    Serial_Data = Read_TCP(Data_Len)
     _value_ = bytearray(Serial_Data)
     print("\n   Bootloader Vendor ID : ", _value_[0])
     print("   Bootloader Version   : ", _value_[1], ".", _value_[2], ".", _value_[3])
 
 def Process_CBL_GET_HELP_CMD(Data_Len):
-    Serial_Data = Read_Serial_Port(Data_Len)
+    Serial_Data = Read_TCP(Data_Len)
     _value_ = bytearray(Serial_Data)
     print("\n   Supported Commands : ", end = ' ')
     for command in _value_:
         print(hex(command), end = ' ')
 
 def Process_CBL_GET_CID_CMD(Data_Len):
-    Serial_Data = Read_Serial_Port(Data_Len)
+    Serial_Data = Read_TCP(Data_Len)
     CID = (Serial_Data[1] << 8) | Serial_Data[0]
     print("\n   Chip Identification Number : ", hex(CID))
 
 def Process_CBL_GET_RDP_STATUS_CMD(Data_Len):
-    Serial_Data = Read_Serial_Port(Data_Len)
+    Serial_Data = Read_TCP(Data_Len)
     _value_ = bytearray(Serial_Data)
     if(_value_[0] == 0xEE):
         print("\n   Error While Reading FLASH Protection level !!")
@@ -153,7 +170,7 @@ def Process_CBL_GET_RDP_STATUS_CMD(Data_Len):
         print("\n   FLASH Protection : LEVEL 2")
 
 def Process_CBL_GO_TO_ADDR_CMD(Data_Len):
-    Serial_Data = Read_Serial_Port(Data_Len)
+    Serial_Data = Read_TCP(Data_Len)
     _value_ = bytearray(Serial_Data)
     if(_value_[0] == 1):
         print("\n   Address Status is Valid")
@@ -162,7 +179,7 @@ def Process_CBL_GO_TO_ADDR_CMD(Data_Len):
 
 def Process_CBL_FLASH_ERASE_CMD(Data_Len):
     BL_Erase_Status = 0
-    Serial_Data = Read_Serial_Port(Data_Len)
+    Serial_Data = Read_TCP(Data_Len)
     if(len(Serial_Data)):
         BL_Erase_Status = bytearray(Serial_Data)
         if(BL_Erase_Status[0] == INVALID_SECTOR_NUMBER):
@@ -179,7 +196,7 @@ def Process_CBL_FLASH_ERASE_CMD(Data_Len):
 def Process_CBL_MEM_WRITE_CMD(Data_Len):
     global Memory_Write_All
     BL_Write_Status = 0
-    Serial_Data = Read_Serial_Port(Data_Len)
+    Serial_Data = Read_TCP(Data_Len)
     BL_Write_Status = bytearray(Serial_Data)
     if(BL_Write_Status[0] == FLASH_PAYLOAD_WRITE_FAILED):
         print("\n   Write Status -> Write Failed or Invalid Address ")
@@ -191,7 +208,7 @@ def Process_CBL_MEM_WRITE_CMD(Data_Len):
 
 def Process_CBL_CHANGE_ROP_Level_CMD(Data_Len):
     BL_CHANGE_ROP_Level_Status = 0
-    Serial_Data = Read_Serial_Port(Data_Len)
+    Serial_Data = Read_TCP(Data_Len)
     if(len(Serial_Data)):
         BL_CHANGE_ROP_Level_Status = bytearray(Serial_Data)
         if(BL_CHANGE_ROP_Level_Status[0] == 0x01):
@@ -249,9 +266,12 @@ def Decode_CBL_Command(Command):
         BL_Host_Buffer[3] = Word_Value_To_Byte_Value(CRC32_Value, 2, 1)
         BL_Host_Buffer[4] = Word_Value_To_Byte_Value(CRC32_Value, 3, 1)
         BL_Host_Buffer[5] = Word_Value_To_Byte_Value(CRC32_Value, 4, 1)
-        Write_Data_To_Serial_Port(BL_Host_Buffer[0], 1)
-        for Data in BL_Host_Buffer[1 : CBL_GET_VER_CMD_Len]:
-            Write_Data_To_Serial_Port(Data, CBL_GET_VER_CMD_Len - 1)
+        
+        Write_Data_To_TCP(BL_Host_Buffer, 1)
+        # print(BL_Host_Buffer)    
+        # for Data in BL_Host_Buffer[1 : CBL_GET_VER_CMD_Len]:
+        #     Write_Data_To_TCP(Data, CBL_GET_VER_CMD_Len - 1)
+            # print(Data)
         Read_Data_From_Serial_Port(CBL_GET_VER_CMD)
     elif (Command == 2):
         print("Read the commands supported by the bootloader")
@@ -264,9 +284,9 @@ def Decode_CBL_Command(Command):
         BL_Host_Buffer[3] = Word_Value_To_Byte_Value(CRC32_Value, 2, 1)
         BL_Host_Buffer[4] = Word_Value_To_Byte_Value(CRC32_Value, 3, 1)
         BL_Host_Buffer[5] = Word_Value_To_Byte_Value(CRC32_Value, 4, 1)
-        Write_Data_To_Serial_Port(BL_Host_Buffer[0], 1)
+        Write_Data_To_TCP(BL_Host_Buffer[0], 1)
         for Data in BL_Host_Buffer[1 : CBL_GET_HELP_CMD_Len]:
-            Write_Data_To_Serial_Port(Data, CBL_GET_HELP_CMD_Len - 1)
+            Write_Data_To_TCP(Data, CBL_GET_HELP_CMD_Len - 1)
         Read_Data_From_Serial_Port(CBL_GET_HELP_CMD)
     elif (Command == 3):
         print("Read the MCU chip identification number")
@@ -279,9 +299,11 @@ def Decode_CBL_Command(Command):
         BL_Host_Buffer[3] = Word_Value_To_Byte_Value(CRC32_Value, 2, 1)
         BL_Host_Buffer[4] = Word_Value_To_Byte_Value(CRC32_Value, 3, 1)
         BL_Host_Buffer[5] = Word_Value_To_Byte_Value(CRC32_Value, 4, 1)
-        Write_Data_To_Serial_Port(BL_Host_Buffer[0], 1)
+        Write_Data_To_TCP("A")
+        Write_Data_To_TCP("Chip ID")
+        Write_Data_To_TCP(BL_Host_Buffer[0], 1)
         for Data in BL_Host_Buffer[1 : CBL_GET_CID_CMD_Len]:
-            Write_Data_To_Serial_Port(Data, CBL_GET_CID_CMD_Len - 1)
+            Write_Data_To_TCP(Data, CBL_GET_CID_CMD_Len - 1)
         Read_Data_From_Serial_Port(CBL_GET_CID_CMD)
     elif (Command == 4):
         print("Read the FLASH Read Protection level")
@@ -294,9 +316,9 @@ def Decode_CBL_Command(Command):
         BL_Host_Buffer[3] = Word_Value_To_Byte_Value(CRC32_Value, 2, 1)
         BL_Host_Buffer[4] = Word_Value_To_Byte_Value(CRC32_Value, 3, 1)
         BL_Host_Buffer[5] = Word_Value_To_Byte_Value(CRC32_Value, 4, 1)
-        Write_Data_To_Serial_Port(BL_Host_Buffer[0], 1)
+        Write_Data_To_TCP(BL_Host_Buffer[0], 1)
         for Data in BL_Host_Buffer[1 : CBL_GET_RDP_STATUS_CMD_Len]:
-            Write_Data_To_Serial_Port(Data, CBL_GET_RDP_STATUS_CMD_Len - 1)
+            Write_Data_To_TCP(Data, CBL_GET_RDP_STATUS_CMD_Len - 1)
         Read_Data_From_Serial_Port(CBL_GET_RDP_STATUS_CMD)
     elif (Command == 5):
         print("Jump bootloader to specified address command")
@@ -315,9 +337,9 @@ def Decode_CBL_Command(Command):
         BL_Host_Buffer[7] = Word_Value_To_Byte_Value(CRC32_Value, 2, 1)
         BL_Host_Buffer[8] = Word_Value_To_Byte_Value(CRC32_Value, 3, 1)
         BL_Host_Buffer[9] = Word_Value_To_Byte_Value(CRC32_Value, 4, 1)
-        Write_Data_To_Serial_Port(BL_Host_Buffer[0], 1)
+        Write_Data_To_TCP(BL_Host_Buffer[0], 1)
         for Data in BL_Host_Buffer[1 : CBL_GO_TO_ADDR_CMD_Len]:
-            Write_Data_To_Serial_Port(Data, CBL_GO_TO_ADDR_CMD_Len - 1)
+            Write_Data_To_TCP(Data, CBL_GO_TO_ADDR_CMD_Len - 1)
         Read_Data_From_Serial_Port(CBL_GO_TO_ADDR_CMD)
     elif (Command == 6):
         print("Mass erase or sector erase of the user flash command")
@@ -343,9 +365,9 @@ def Decode_CBL_Command(Command):
         BL_Host_Buffer[8] = Word_Value_To_Byte_Value(CRC32_Value, 2, 1)
         BL_Host_Buffer[9] = Word_Value_To_Byte_Value(CRC32_Value, 3, 1)
         BL_Host_Buffer[10] = Word_Value_To_Byte_Value(CRC32_Value, 4, 1)
-        Write_Data_To_Serial_Port(BL_Host_Buffer[0], 1)
+        Write_Data_To_TCP(BL_Host_Buffer[0], 1)
         for Data in BL_Host_Buffer[1 : CBL_FLASH_ERASE_CMD_Len]:
-            Write_Data_To_Serial_Port(Data, CBL_FLASH_ERASE_CMD_Len - 1)
+            Write_Data_To_TCP(Data, CBL_FLASH_ERASE_CMD_Len - 1)
         Read_Data_From_Serial_Port(CBL_FLASH_ERASE_CMD)
     elif (Command == 7):
         print("Write data into different memories of the MCU command")
@@ -413,13 +435,13 @@ def Decode_CBL_Command(Command):
             BaseMemoryAddress = BaseMemoryAddress + BinFileReadLength
             
             ''' Send the packet length to the bootloader '''
-            Write_Data_To_Serial_Port(BL_Host_Buffer[0], 1)
+            Write_Data_To_TCP(BL_Host_Buffer[0], 1)
 
             sleep(.1)
-            #print("code:")
+            # print("code:")
             ''' Send the complete packet to the bootloader '''
             for Data in BL_Host_Buffer[1 : CBL_MEM_WRITE_CMD_Len]:
-                Write_Data_To_Serial_Port(Data, CBL_MEM_WRITE_CMD_Len - 1)
+                Write_Data_To_TCP(Data, CBL_MEM_WRITE_CMD_Len - 1)
                 
             ''' Update the total number of bytes sent to the bootloader '''
             BinFileSentBytes = BinFileSentBytes + BinFileReadLength
@@ -453,41 +475,40 @@ def Decode_CBL_Command(Command):
             BL_Host_Buffer[4] = Word_Value_To_Byte_Value(CRC32_Value, 2, 1)
             BL_Host_Buffer[5] = Word_Value_To_Byte_Value(CRC32_Value, 3, 1)
             BL_Host_Buffer[6] = Word_Value_To_Byte_Value(CRC32_Value, 4, 1)
-            Write_Data_To_Serial_Port(BL_Host_Buffer[0], 1)
+            Write_Data_To_TCP(BL_Host_Buffer[0], 1)
             for Data in BL_Host_Buffer[1 : CBL_CHANGE_ROP_Level_CMD_Len]:
-                Write_Data_To_Serial_Port(Data, CBL_CHANGE_ROP_Level_CMD_Len - 1)
+                Write_Data_To_TCP(Data, CBL_CHANGE_ROP_Level_CMD_Len - 1)
             Read_Data_From_Serial_Port(CBL_CHANGE_ROP_Level_CMD)
         else:
             print("\n   Protection level (", Protection_level, ") not supported !!")
             
         
 
-SerialPortName = input("Enter the Port Name of your device(Ex: COM3):")
-Serial_Port_Configuration(SerialPortName)
+# SerialPortName = input("Enter the Port Name of your device(Ex: COM3):||||WILL NOT BE USED FOR THE TCP||||")
+#Serial_Port_Configuration(SerialPortName)
         
-while True:
-    print("\nSTM32F407 Custome BootLoader")
-    print("==============================")
-    print("Which command you need to send to the bootLoader :");
-    print("   CBL_GET_VER_CMD              --> 1")
-    print("   CBL_GET_HELP_CMD             --> 2")
-    print("   CBL_GET_CID_CMD              --> 3")
-    print("   CBL_GET_RDP_STATUS_CMD       --> 4")
-    print("   CBL_GO_TO_ADDR_CMD           --> 5")
-    print("   CBL_FLASH_ERASE_CMD          --> 6")
-    print("   CBL_MEM_WRITE_CMD            --> 7")
-    print("   CBL_ED_W_PROTECT_CMD         --> 8")
-    print("   CBL_MEM_READ_CMD             --> 9")
-    print("   CBL_READ_SECTOR_STATUS_CMD   --> 10")
-    print("   CBL_OTP_READ_CMD             --> 11")
-    print("   CBL_CHANGE_ROP_Level_CMD     --> 12")
-    
-    CBL_Command = input("\nEnter the command code : ")
-    
-    if(not CBL_Command.isdigit()):
-        print("   Error !!, Please enter a valid command !! \n")
-    else:
-        Decode_CBL_Command(int(CBL_Command))
-    
-    input("\nPlease press any key to continue ...")
-    Serial_Port_Obj.reset_input_buffer()
+with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
+    s.bind((HOST, PORT))
+    s.listen()
+    print("Server is listening on port", PORT)
+    conn, addr = s.accept()
+    with conn:
+        print('Connected by', addr)
+        while True:
+            print("\nSTM32F103 Custome BootLoader")
+            print("==============================")
+            print("Which command you need to send to the bootLoader :");
+            print("   CBL_GET_VER_CMD              --> 1")
+            print("   CBL_GET_HELP_CMD             --> 2")
+            print("   CBL_GET_CID_CMD              --> 3")
+            print("   CBL_FLASH_ERASE_CMD          --> 6")
+            print("   CBL_MEM_WRITE_CMD            --> 7")
+            
+            CBL_Command = input("\nEnter the command code : ")
+            
+            if(not CBL_Command.isdigit()):
+                print("   Error !!, Please enter a valid command !! \n")
+            else:
+                Decode_CBL_Command(int(CBL_Command))
+            
+            input("\nPlease press any key to continue ...")
