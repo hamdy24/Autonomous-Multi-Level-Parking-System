@@ -1,88 +1,18 @@
-#include <SoftwareSerial.h>
-#include <ESP8266WiFi.h>
-#include <ESP8266HTTPClient.h>
-#include <ArduinoJson.h> // Include ArduinoJson library
-
-// --------------------- Wifi configuration ----------------------------
-
-const char* ssid = "Suiiiii";
-const char* password = "754764834Suiiiiiiii";
-const char* api_url = "http://192.168.1.5/my-api/amdy.php";
-
-WiFiClient client;
-HTTPClient http;
+#include "app_configs.h"
+#include "server_configs.h"
 
 
-bool isParking = false, isRetreiving = false;
-
-
-// ------------------- Robot 1&2 States ---------------------------------
-
-#define START_PARKING       'U'
-#define FINISH_PARKING        'B'
-
-#define RECEIVED_OK         'C'
-
-#define PARKING_REQUEST       'D'
-
-#define FIRST_REKEB         'F'
-#define FIRST_HOME          'G'
-
-#define ARRIVED_INFRONTOF_SLOT    'H'
-#define ARRIVED_AT_ENTRY      'I'
-#define DONE_PARKING        'J'
-
-#define IM_DONE               'K'
-
-#define RETRIEVAL_REQUEST     'E'
-#define START_RETRIEVING       'L'
-#define FINISH_RETRIEVING        'M'
-#define DONE_RETREIVING     'N'
-
-
-#define DEBUG_SERIAL          Serial
-#define STM_SERIAL          mySerial
-
-// --------------------- Software Serial configuration --------------------
-
-#define RX_PIN 14  // ---> D5
-#define TX_PIN 12  // ---> D6
-
-SoftwareSerial mySerial(RX_PIN, TX_PIN);
-
-
-// ----------------------- Prototypes -------------------------------------
-
-// ------------- Functions to get & update data from database 
-
-int Http_Read_FirstRobotStatus(void);
-void Http_Update_Robot2_Status(int new_robot2_state);
-void Http_Update_Robot1_Status(int new_robot1_state);
-
-// -------------- Helper Functions
-
-int charToInt(char a);
-char intToChar(int b);
-
-// --------------- Setup
+void Http_Update_Robot1_Status(int new_robot1_state); // currently for testing only and will be deleted
 
 void setup() {
-  // Initialize serial communication
-  DEBUG_SERIAL.begin(115200);
-  STM_SERIAL.begin(115200);
-  WiFi.begin(ssid, password);
-  while (WiFi.status() != WL_CONNECTED) {
-    delay(1000);
-    DEBUG_SERIAL.println("Connecting to WiFi...");
-  }
-  DEBUG_SERIAL.println("Connected to WiFi");
+  app_setup();
 }
 
-
-
-// ------------ Main loop
-
 void loop() {
+
+
+
+  
   // Check if the STM is available for sending & receciving
   while (STM_SERIAL.available()) {
     // Should be updated from server
@@ -94,10 +24,14 @@ void loop() {
 
     STM_SERIAL.write(ServerRequest);
     DEBUG_SERIAL.print(ServerRequest);
+
     char c = STM_SERIAL.read();
+
     while(c != RECEIVED_OK){    // Wait till receiveing el ok
       STM_SERIAL.write(ServerRequest);
+
       c = STM_SERIAL.read();
+      
       DEBUG_SERIAL.println("Waiting for [RECEIVED_OK]");
       delay(100);
     }
@@ -108,10 +42,10 @@ void loop() {
 
     Http_Update_Robot1_Status(charToInt(FIRST_REKEB));   // As a simulation that this change done by the first robot
 
-    char r = intToChar(Http_Read_FirstRobotStatus());     // Get First Robot state from Database
+    char r = intToChar(server_read_RobotState());     // Get First Robot state from Database
     while(r != FIRST_REKEB)
     {
-      r = intToChar(Http_Read_FirstRobotStatus());
+      r = intToChar(server_read_RobotState());
       delay(100);
     }
     STM_SERIAL.write(FIRST_REKEB);
@@ -129,9 +63,9 @@ void loop() {
     }
 
     if(isParking)
-      Http_Update_Robot2_Status(charToInt(START_PARKING));
+      server_update_RobotState(charToInt(START_PARKING));
     else if(isRetreiving)
-      Http_Update_Robot2_Status(charToInt(START_RETRIEVING));
+      server_update_RobotState(charToInt(START_RETRIEVING));
 
     delay(800);   // Delay for waiting to arrive the desired slot
     
@@ -141,7 +75,7 @@ void loop() {
       DEBUG_SERIAL.println("Waiting for [ARRIVED_INFRONTOF_SLOT]");
       delay(100);
     }
-    Http_Update_Robot2_Status(charToInt(ARRIVED_INFRONTOF_SLOT));
+    server_update_RobotState(charToInt(ARRIVED_INFRONTOF_SLOT));
 
 
     delay(1000);   // Simulation of time taking to park the car
@@ -159,10 +93,10 @@ void loop() {
     }
     
 
-    r = intToChar(Http_Read_FirstRobotStatus());
+    r = intToChar(server_read_RobotState());
     while(r != DONE_PARKING && r != DONE_RETREIVING)
     {
-      r = intToChar(Http_Read_FirstRobotStatus());
+      r = intToChar(server_read_RobotState());
       delay(100);
     }
 
@@ -182,7 +116,7 @@ void loop() {
       DEBUG_SERIAL.println("Waiting for [ARRIVED_AT_ENTRY]");
       delay(100);
     }
-    Http_Update_Robot2_Status(charToInt(ARRIVED_AT_ENTRY));
+    server_update_RobotState(charToInt(ARRIVED_AT_ENTRY));
     
     delay(1000);   // Delay to simulate first robot time to back to its home
     DEBUG_SERIAL.print("Sending a [FIRST_HOME] Signal");
@@ -190,10 +124,10 @@ void loop() {
 
     Http_Update_Robot1_Status(charToInt(FIRST_HOME));   // As a simulation that this change done by the first robot
 
-    r = intToChar(Http_Read_FirstRobotStatus());
+    r = intToChar(server_read_RobotState());
     while(r != FIRST_HOME)
     {
-      r = intToChar(Http_Read_FirstRobotStatus());
+      r = intToChar(server_read_RobotState());
       delay(100);
     }    
     STM_SERIAL.write(FIRST_HOME); 
@@ -210,16 +144,16 @@ void loop() {
     }
     
     if(isParking)
-      Http_Update_Robot2_Status(charToInt(FINISH_PARKING));
+      server_update_RobotState(charToInt(FINISH_PARKING));
     else if(isRetreiving)
-      Http_Update_Robot2_Status(charToInt(FINISH_RETRIEVING));
+      server_update_RobotState(charToInt(FINISH_RETRIEVING));
 
     Http_Update_Robot1_Status(charToInt(IM_DONE));   // As a simulation that this change done by the first robot
 
-    r = intToChar(Http_Read_FirstRobotStatus());
+    r = intToChar(server_read_RobotState());
     while(r != IM_DONE)
     {
-      r = intToChar(Http_Read_FirstRobotStatus());
+      r = intToChar(server_read_RobotState());
       delay(100);
     }   
     STM_SERIAL.write(IM_DONE);
@@ -234,62 +168,6 @@ void loop() {
     isRetreiving = false;
   }
 }
-
-
-int Http_Read_FirstRobotStatus()
-{
-  String action = "get_data";
-  String payload = "action=" + action;
-
-  http.begin(client, api_url);
-  http.addHeader("Content-Type", "application/x-www-form-urlencoded");
-  
-  // Send the POST request
-  int httpResponseCode = http.POST(payload);
-  int robot1_state = 0;
-
-  if (httpResponseCode == HTTP_CODE_OK) {
-    String response = http.getString();
-    Serial.print("Response: ");
-    Serial.println(response);
-
-    // Parse JSON response
-    DynamicJsonDocument doc(512); // Adjust the buffer size as needed
-    deserializeJson(doc, response);
-
-    // Extract robot1_state
-    robot1_state = doc["robot1_state"];
-    DEBUG_SERIAL.print("Robot1 State: ");
-    DEBUG_SERIAL.println(robot1_state);
-    http.end();
-  }
-
-  return robot1_state;
-}
-
-
-void Http_Update_Robot2_Status(int new_robot2_state)
-{
-  String action = "update_robot2";
-  String payload = "action=" + action + "&robot2_state=" + String(new_robot2_state) + "&version=" + String(3);
-
-  http.begin(client, api_url);
-  http.addHeader("Content-Type", "application/x-www-form-urlencoded");
-  
-  // Send the POST request
-  int httpResponseCode = http.POST(payload);
-
-  if (httpResponseCode == HTTP_CODE_OK) {
-    String response = http.getString();
-    Serial.print("Response: ");
-    Serial.println(response);
-  }
-
-  http.end();
-}
-
-
-
 
 void Http_Update_Robot1_Status(int new_robot1_state)
 {
@@ -311,15 +189,3 @@ void Http_Update_Robot1_Status(int new_robot1_state)
   http.end();
 }
 
-
-
-int charToInt(char a)
-{
-  return (a - '0');
-}
-
-
-char intToChar(int b)
-{
-  return (b + '0');
-}
