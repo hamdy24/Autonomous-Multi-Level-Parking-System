@@ -345,7 +345,7 @@ int main(void) {
 
 void Clock_Init()
 {
-	MCAL_RCC_CLK_Init(HSE_CLK, RCC_CLK_72M);  // is a must due to MPU6050
+	MCAL_RCC_CLK_Init(HSI_CLK, RCC_CLK_8M);  // is a must due to MPU6050
 
 	RCC_GPIOC_CLK_EN();
 	RCC_USART2_CLK_EN();
@@ -354,11 +354,9 @@ void Clock_Init()
 	RCC_GPIOA_CLK_EN();
 
 	RCC_AFIO_CLK_EN();
-	RCC_TIMER2_CLK_EN();
 	RCC_I2C1_CLK_EN();
 
 	TIMER1_Init(RCC_CLK_36M);
-	TIMER2_Init(RCC_CLK_36M);
 
 }
 
