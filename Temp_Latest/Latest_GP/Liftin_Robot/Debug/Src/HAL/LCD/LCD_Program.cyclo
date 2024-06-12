@@ -1,0 +1,13 @@
+../Src/HAL/LCD/LCD_Program.c:24:6:LCD_enuInit	3
+../Src/HAL/LCD/LCD_Program.c:151:13:LCD_enuWriteAndLatch	5
+../Src/HAL/LCD/LCD_Program.c:236:6:LCD_enuSendData	1
+../Src/HAL/LCD/LCD_Program.c:246:6:LCD_enuSendCommand	1
+../Src/HAL/LCD/LCD_Program.c:257:6:LCD_enuSendString	2
+../Src/HAL/LCD/LCD_Program.c:270:6:LCD_enuClearDisplay	1
+../Src/HAL/LCD/LCD_Program.c:279:6:LCD_enuJumpCursorTo	5
+../Src/HAL/LCD/LCD_Program.c:340:6:LCD_enuDisplayIntNum	5
+../Src/HAL/LCD/LCD_Program.c:378:6:LCD_enuDisplayCustomArrCharachter	4
+../Src/HAL/LCD/LCD_Program.c:410:6:LCD_enuDisplayCustomSingleCharachter	3
+../Src/HAL/LCD/LCD_Program.c:431:6:LCD_enuSavePattern	2
+../Src/HAL/LCD/LCD_Program.c:445:6:LCD_enuPrintPattern	3
+../Src/HAL/LCD/LCD_Program.c:461:6:LCD_enuDisplayFloatNum	8

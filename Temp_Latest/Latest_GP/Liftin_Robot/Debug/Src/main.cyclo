@@ -1,0 +1,4 @@
+../Src/main.c:143:6:UART_Test_Callback	3
+../Src/main.c:156:5:main	12
+../Src/main.c:421:6:Proceed_Parking	9
+../Src/main.c:531:6:Proceed_BackToHome	1
