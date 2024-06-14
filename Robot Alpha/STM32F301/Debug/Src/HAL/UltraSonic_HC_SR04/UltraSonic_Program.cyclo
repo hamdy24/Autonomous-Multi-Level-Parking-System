@@ -1,3 +1,0 @@
-../Src/HAL/UltraSonic_HC_SR04/UltraSonic_Program.c:26:6:HC_SR04_Init	1
-../Src/HAL/UltraSonic_HC_SR04/UltraSonic_Program.c:48:6:HC_SR04_Trigger	1
-../Src/HAL/UltraSonic_HC_SR04/UltraSonic_Program.c:55:6:HC_SR04_ReadDistance	3

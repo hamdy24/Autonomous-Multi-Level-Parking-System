@@ -1,4 +1,0 @@
-../Src/main.c:143:6:UART_Test_Callback	8	static
-../Src/main.c:156:5:main	104	static
-../Src/main.c:421:6:Proceed_Parking	40	static
-../Src/main.c:531:6:Proceed_BackToHome	16	static

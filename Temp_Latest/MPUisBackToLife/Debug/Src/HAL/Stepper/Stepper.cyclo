@@ -1,2 +1,0 @@
-../Src/HAL/Stepper/Stepper.c:14:6:Stepper_Init	1
-../Src/HAL/Stepper/Stepper.c:30:6:Stepper_Move_Steps	3
