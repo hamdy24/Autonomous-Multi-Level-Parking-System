@@ -38,12 +38,12 @@
 #include "../Src/HAL/includes/DC_Motor.h"
 
 
-#define START_PARKING       'U'
-#define FINISH_PARKING        'X'
+#define START_PARKING       'B'
+#define FINISH_PARKING        'C'
 
-#define RECEIVED_OK         'C'
+#define RECEIVED_OK         'D'
 
-#define PARKING_REQUEST       'B'  // For now, mapping to 1 in DB.
+#define PARKING_REQUEST       'E'  // For now, mapping to 1 in DB.
 
 #define FIRST_REKEB         'F'
 #define FIRST_HOME          'G'
@@ -54,10 +54,15 @@
 
 #define IM_DONE               'K'
 
-#define RETRIEVAL_REQUEST     'E'
-#define START_RETRIEVING       'L'
-#define FINISH_RETRIEVING        'M'
-#define DONE_RETREIVING			'N'
+#define RETRIEVAL_REQUEST     'L'
+#define START_RETRIEVING       'M'
+#define FINISH_RETRIEVING        'N'
+#define DONE_RETREIVING			'O'
+
+#define LIFTING_INIT		'U'
+#define ELEV_INIT			'V'
+
+
 
 
 
@@ -195,6 +200,9 @@ int main(void) {
 
 
 	while (1) {
+
+
+
 		if(newMessageArrived)
 		{
 			newMessageArrived = 0;
@@ -225,7 +233,7 @@ int main(void) {
 					MyCurrentState = Retreiving_Staretd;
 				}
 
-//				mySendChar = START_PARKING;
+				//				mySendChar = START_PARKING;
 				MCAL_UART_SendData(USART2, &mySendChar, Enable);
 
 
@@ -298,7 +306,7 @@ int main(void) {
 					MyCurrentState = Retreiving_Finished;
 				}
 
-//				mySendChar = FINISH_PARKING;
+				//				mySendChar = FINISH_PARKING;
 				MCAL_UART_SendData(USART2, &mySendChar, Enable);
 
 
@@ -323,7 +331,7 @@ int main(void) {
 				else if(isRetrieving)
 					mySendChar = FINISH_RETRIEVING;
 
-//				mySendChar = FINISH_PARKING;
+				//				mySendChar = FINISH_PARKING;
 				MCAL_UART_SendData(USART2, &mySendChar, Enable);
 
 
@@ -360,5 +368,4 @@ void Clock_Init()
 	TIMER1_Init(RCC_CLK_8M);
 
 }
-
 

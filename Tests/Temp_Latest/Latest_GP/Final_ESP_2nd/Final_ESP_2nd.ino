@@ -5,9 +5,9 @@
 
 // --------------------- Wifi configuration ----------------------------
 
-const char* ssid = "Suiiiiii";
-const char* password = "23456789009sui";
-const char* api_url = "http://192.168.43.246/my-api/amdy.php";
+const char* ssid = "Orange-9ptg";
+const char* password = "75934821Aa@";
+const char* api_url = "http://192.168.1.7/my-api/amdy.php";
 
 WiFiClient client;
 HTTPClient http;
@@ -18,12 +18,12 @@ bool isParking = false, isRetreiving = false;
 
 // ------------------- Robot 1&2 States ---------------------------------
 
-#define START_PARKING       'U'
-#define FINISH_PARKING        'X'
+#define START_PARKING       'B'
+#define FINISH_PARKING        'C'
 
-#define RECEIVED_OK         'C'
+#define RECEIVED_OK         'D'
 
-#define PARKING_REQUEST       'B'  // For now, mapping to 1 in DB.
+#define PARKING_REQUEST       'E'  // For now, mapping to 1 in DB.
 
 #define FIRST_REKEB         'F'
 #define FIRST_HOME          'G'
@@ -34,10 +34,13 @@ bool isParking = false, isRetreiving = false;
 
 #define IM_DONE               'K'
 
-#define RETRIEVAL_REQUEST     'E'
-#define START_RETRIEVING       'L'
-#define FINISH_RETRIEVING        'M'
-#define DONE_RETREIVING			'N'
+#define RETRIEVAL_REQUEST     'L'
+#define START_RETRIEVING       'M'
+#define FINISH_RETRIEVING        'N'
+#define DONE_RETREIVING			'O'
+
+#define LIFTING_INIT		'U'
+#define ELEV_INIT			'V'
 
 
 #define DEBUG_SERIAL          Serial
@@ -65,6 +68,8 @@ int Http_Read_ServerRequest();
 int charToInt(char a);
 char intToChar(int b);
 
+int robot1_state = 0;
+
 // --------------- Setup
 
 void setup() {
@@ -79,6 +84,9 @@ void setup() {
   DEBUG_SERIAL.println("Connected to WiFi");
 
   http.begin(client, api_url);
+
+  
+
 }
 
 
@@ -88,8 +96,39 @@ void setup() {
 void loop() {
   // Check if the STM is available for sending & receciving
   while (STM_SERIAL.available()) {
+
+    Http_Update_Robot2_Status(charToInt(ELEV_INIT));
+
+    robot1_state = intToChar(Http_Read_FirstRobotStatus());
+
+
+    char ServerRequest = intToChar(Http_Read_ServerRequest());
+
+  
+    ServerRequest = ServerRequest;  // ---> Just change this in case of retrieving
+    STM_SERIAL.write(ServerRequest);
+    DEBUG_SERIAL.print(ServerRequest);
+
+    DEBUG_SERIAL.print(PARKING_REQUEST);
+
+  DEBUG_SERIAL.print(PARKING_REQUEST == ServerRequest);
+
+    delay(3000);
+
+
+    while(robot1_state != LIFTING_INIT){
+      robot1_state = intToChar(Http_Read_FirstRobotStatus());
+      DEBUG_SERIAL.print("Hoooo");
+      delay(100);
+    }
+
+
+    
+    
+
+
     // Should be updated from server
-    char ServerRequest = PARKING_REQUEST;  // ---> Just change this in case of retrieving
+    ServerRequest = PARKING_REQUEST;  // ---> Just change this in case of retrieving
     if(ServerRequest == PARKING_REQUEST)
       isParking = true;
     else if(ServerRequest == RETRIEVAL_REQUEST)
@@ -361,4 +400,3 @@ char intToChar(int b)
 {
   return (b + 'A');
 }
-

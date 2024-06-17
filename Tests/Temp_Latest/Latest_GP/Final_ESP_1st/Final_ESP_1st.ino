@@ -5,12 +5,12 @@
 
 // Liftiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiinnnnnnnnnnnnnngggggggggg
 
-#define START_PARKING       'U'
-#define FINISH_PARKING        'X'
+#define START_PARKING       'B'
+#define FINISH_PARKING        'C'
 
-#define RECEIVED_OK         'C'
+#define RECEIVED_OK         'D'
 
-#define PARKING_REQUEST       'B'
+#define PARKING_REQUEST       'E'
 
 #define FIRST_REKEB         'F'
 #define FIRST_HOME          'G'
@@ -21,19 +21,22 @@
 
 #define IM_DONE               'K'
 
-#define RETRIEVAL_REQUEST     'E'
-#define START_RETRIEVING       'L'
-#define FINISH_RETRIEVING        'M'
-#define DONE_RETREIVING			'N'
+#define RETRIEVAL_REQUEST     'L'
+#define START_RETRIEVING       'M'
+#define FINISH_RETRIEVING        'N'
+#define DONE_RETREIVING			'O'
 
-#define CAR_ARRIVED				'O'
+#define CAR_ARRIVED				'P'
 
 
-#define ACK_STARTING			'P'
-#define ACK_DONE				'Q'
-#define ACK_CAR_ARRIVED				'R'
-#define ACK_ARIV_AT_SLOT		'S'
+#define ACK_STARTING			'Q'
+#define ACK_DONE				'R'
+#define ACK_CAR_ARRIVED				'S'
+#define ACK_ARIV_AT_SLOT		'T'
 
+
+#define LIFTING_INIT		'U'
+#define ELEV_INIT			'V'
 
 int charToInt(char a);
 char intToChar(int b);
@@ -52,9 +55,9 @@ char Buffer[22] = {0};
 
 char c;
 int i=0;
-const char* ssid = "Suiiiiii";
-const char* password = "23456789009sui";
-const char* api_url = "http://192.168.43.246/my-api/amdy.php";
+const char* ssid = "Orange-9ptg";
+const char* password = "75934821Aa@";
+const char* api_url = "http://192.168.1.7/my-api/amdy.php";
 const int ledPin = 5; 
 
 int robot2_state = 0;
@@ -71,17 +74,41 @@ void setup() {
     DEBUG_SERIAL.println("Connecting to WiFi...");
   }
   DEBUG_SERIAL.println("Connected to WiFi");
+
+
 }
  WiFiClient client;
-  HTTPClient http;
+HTTPClient http;
 
 
 void loop() {
   while (STM_SERIAL.available()) {
-    char ServerRequest = PARKING_REQUEST;  // ---> Just change this in case of retrieving
-    STM_SERIAL.write(PARKING_REQUEST);
+    Http_Update_Robot1_Status(charToInt(LIFTING_INIT));
+
+    robot2_state = intToChar(Http_Read_SecondRobotStatus());
+
+    while(robot2_state != ELEV_INIT){
+      robot2_state = intToChar(Http_Read_SecondRobotStatus());
+      delay(100);
+    }
+
+    char ServerRequest = intToChar(Http_Read_ServerRequest());
+
+  
+    ServerRequest = ServerRequest;  // ---> Just change this in case of retrieving
+    STM_SERIAL.write(ServerRequest);
+    DEBUG_SERIAL.print(ServerRequest);
+
     DEBUG_SERIAL.print(PARKING_REQUEST);
-           
+
+
+    DEBUG_SERIAL.print(ServerRequest == PARKING_REQUEST);
+
+
+    delay(3000);
+
+    
+
     c = STM_SERIAL.read();
     while(c != RECEIVED_OK){    // Wait till receiveing el ok
       STM_SERIAL.write(PARKING_REQUEST);
@@ -293,4 +320,3 @@ char intToChar(int b)
 {
   return (b + 'A');
 }
-

@@ -50,12 +50,12 @@
 
 
 
-#define START_PARKING       'U'
-#define FINISH_PARKING        'X'
+#define START_PARKING       'B'
+#define FINISH_PARKING        'C'
 
-#define RECEIVED_OK         'C'
+#define RECEIVED_OK         'D'
 
-#define PARKING_REQUEST       'B'
+#define PARKING_REQUEST       'E'
 
 #define FIRST_REKEB         'F'
 #define FIRST_HOME          'G'
@@ -66,18 +66,23 @@
 
 #define IM_DONE               'K'
 
-#define RETRIEVAL_REQUEST     'E'
-#define START_RETRIEVING       'L'
-#define FINISH_RETRIEVING        'M'
-#define DONE_RETREIVING			'N'
+#define RETRIEVAL_REQUEST     'L'
+#define START_RETRIEVING       'M'
+#define FINISH_RETRIEVING        'N'
+#define DONE_RETREIVING			'O'
 
-#define CAR_ARRIVED				'O'
+#define CAR_ARRIVED				'P'
 
 
-#define ACK_STARTING			'P'
-#define ACK_DONE				'Q'
-#define ACK_CAR_ARRIVED				'R'
-#define ACK_ARIV_AT_SLOT		'S'
+#define ACK_STARTING			'Q'
+#define ACK_DONE				'R'
+#define ACK_CAR_ARRIVED				'S'
+#define ACK_ARIV_AT_SLOT		'T'
+
+
+#define LIFTING_INIT		'U'
+#define ELEV_INIT			'V'
+
 
 
 volatile uint8_t RecievedFromServer = 0;
@@ -545,7 +550,6 @@ void Proceed_BackToHome(Motor_Config_t *Motor1, Motor_Config_t *Motor2)
 
 	Delay_Timer1_ms(1000);
 }
-
 
 
 
