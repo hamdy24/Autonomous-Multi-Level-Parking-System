@@ -238,17 +238,18 @@ int main(void) {
 
 
 				// 3- Move forward -- distance (Main Track)
+
 				while(!Done_Moving_Forward)
 				{
-					Motor_Move_ForWard(&DC_Motor1, 100);
-					Motor_Move_ForWard(&DC_Motor2, 100);
+//					Motor_Move_ForWard(&DC_Motor1, 100);
+//					Motor_Move_ForWard(&DC_Motor2, 100);
 					Delay_Timer1_ms(3000);
-					Motor_TurnOff(&DC_Motor1);
-					Motor_TurnOff(&DC_Motor2);
+//					Motor_TurnOff(&DC_Motor1);
+//					Motor_TurnOff(&DC_Motor2);
 					Done_Moving_Forward = 1;
 
-					Stepper_Move_Steps(TIMER4, TIMER_CH4, 800, 50, 700, Stepper_UP);  // B9 --> RED Step
-					Stepper_Move_Steps(TIMER4, TIMER_CH2, 800, 50, 1100, Stepper_UP);  // B7 --> BLUE Step
+//					Stepper_Move_Steps(TIMER4, TIMER_CH4, 800, 50, 700, Stepper_UP);  // B9 --> RED Step
+//					Stepper_Move_Steps(TIMER4, TIMER_CH2, 800, 50, 1100, Stepper_UP);  // B7 --> BLUE Step
 					Delay_Timer1_ms(3000);
 				}
 
@@ -268,16 +269,17 @@ int main(void) {
 			if(RecievedFromServer == DONE_PARKING || RecievedFromServer == DONE_RETREIVING){
 				RecievedFromServer = 0;
 				// 7- Backward distance -- (Main track)
+
 				while(!Done_Moving_Backward)
 				{
-					Motor_Move_BackWard(&DC_Motor1, 100);
-					Motor_Move_BackWard(&DC_Motor2, 100);
+//					Motor_Move_BackWard(&DC_Motor1, 100);
+//					Motor_Move_BackWard(&DC_Motor2, 100);
 					Delay_Timer1_ms(3000);
-					Motor_TurnOff(&DC_Motor1);
-					Motor_TurnOff(&DC_Motor2);
+//					Motor_TurnOff(&DC_Motor1);
+//					Motor_TurnOff(&DC_Motor2);
 					// 8- Lower the other robot
-					Stepper_Move_Steps(TIMER4, TIMER_CH4, 800, 50, 700, Stepper_Down);  // B9 --> Step
-					Stepper_Move_Steps(TIMER4, TIMER_CH2, 800, 50, 1100, Stepper_Down);  // B7 --> Step
+//					Stepper_Move_Steps(TIMER4, TIMER_CH4, 800, 50, 700, Stepper_Down);  // B9 --> Step
+//					Stepper_Move_Steps(TIMER4, TIMER_CH2, 800, 50, 1100, Stepper_Down);  // B7 --> Step
 					Delay_Timer1_ms(3000);
 					Done_Moving_Backward = 1;
 				}

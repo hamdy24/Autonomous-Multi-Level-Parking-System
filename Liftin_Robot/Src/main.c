@@ -84,6 +84,10 @@
 #define ELEV_INIT			'V'
 
 
+#define DELAY_HOME_ELEVATOR   	2500
+#define DELAY_ELEVATOR_PARKING 	3000
+
+
 
 volatile uint8_t RecievedFromServer = 0;
 volatile uint8_t isReceived_Server = 0;
@@ -137,6 +141,14 @@ Robot_State MyCurrentState = Idle;
 uint32_t Ultra1Distance = 255;
 uint32_t Ultra2Distance = 0;
 
+
+#define STEPPER_STEPS	2500
+
+
+uint8_t ProceedParking = 0;
+uint8_t DoneHome = 0;
+uint8_t UltraMove = 0;
+
 float integral = 0;
 float derivative = 0;
 
@@ -148,8 +160,9 @@ int correction_steps = 0;
 void UART_Test_Callback(void)
 {
 	MCAL_UART_ReceiveData(USART2, &RecievedFromServer, Enable);
-	if(RecievedFromServer == PARKING_REQUEST || RecievedFromServer == RETRIEVAL_REQUEST)
+	if(RecievedFromServer == PARKING_REQUEST || RecievedFromServer == RETRIEVAL_REQUEST){
 		newMessageArrived = 1;
+	}
 
 	MCAL_UART_SendData(USART2, &Buffer, Enable);
 }
@@ -233,16 +246,14 @@ int main(void) {
 	Stepper_Init(&StepperDirPin);
 
 
-	char HCSR[20];
-
 
 	/* Loop forever */
 	while (1) {
 
 
-////		Stepper_Move_Steps(TIMER4, TIMER_CH4, 8000, 50, 500, Stepper_UP);
-//		Stepper_Move_Steps(TIMER4, TIMER_CH4, 800, 50, 700, Stepper_UP);  // B9 --> Step
-//		Delay_Timer1_ms(500);
+		////		Stepper_Move_Steps(TIMER4, TIMER_CH4, 8000, 50, 500, Stepper_UP);
+		//		Stepper_Move_Steps(TIMER4, TIMER_CH4, 800, 50, 700, Stepper_UP);  // B9 --> Step
+		//		Delay_Timer1_ms(500);
 
 
 		if(newMessageArrived)
@@ -253,36 +264,18 @@ int main(void) {
 
 			if (RecievedFromServer == PARKING_REQUEST || RecievedFromServer == RETRIEVAL_REQUEST)
 			{
+				ProceedParking = 0;
+				DoneHome = 0;
+				UltraMove = 0;
 				mySendChar = RECEIVED_OK;
 
 				MCAL_UART_SendData(USART2, &mySendChar, Enable);
-				//				MCAL_UART_ReceiveData(USART2, &RecievedFromServer, Enable);
 
-				// Check ultrasonics for arrival of the car
-
+				Stepper_Move_Steps(TIMER4, TIMER_CH4, STEPPER_STEPS, 50, 700, Stepper_UP);  // B9 --> Step
 
 
+				Delay_Timer1_ms(4000);
 
-
-
-				//
-				//				for(int i=0; i< Ultra1Distance; i++)
-				//				{
-				//					MCAL_GPIO_WritePin(GPIOC, GPIO_PIN_13, GPIO_PIN_LOW);
-				//					Delay_Timer1_ms(500);
-				//					MCAL_GPIO_WritePin(GPIOC, GPIO_PIN_13, GPIO_PIN_HIGH);
-				//					Delay_Timer1_ms(500);
-				//
-				//				}
-
-
-
-				//				sprintf(HCSR, "%d\n", (int)Ultra1Distance);
-				//				MCAL_UART_SendData(USART2, HCSR, Enable);
-
-
-
-				//				Ultra1Distance = 0;
 
 				do{
 					HC_SR04_ReadDistance(0, &Ultra1Distance);
@@ -300,15 +293,22 @@ int main(void) {
 				// Move to the Elevator, then send a "FIRST_REKEB"
 				LCD_enuJumpCursorTo(1, 0);
 				LCD_enuSendString("GOING_ToElevator");
-				Motor_Move_ForWard(&DC_Motor1, 100);
-				Motor_Move_ForWard(&DC_Motor2, 100);
 
-				Delay_Timer1_ms(2000);
+				if(!UltraMove)
+				{
+					Motor_Move_ForWard(&DC_Motor1, 60);
+					Motor_Move_ForWard(&DC_Motor2, 60);
+					Delay_Timer1_ms(DELAY_HOME_ELEVATOR);
+					Motor_TurnOff(&DC_Motor1);
+					Motor_TurnOff(&DC_Motor2);
 
-				Motor_TurnOff(&DC_Motor1);
-				Motor_TurnOff(&DC_Motor2);
+					Delay_Timer1_ms(2000);
 
-				Delay_Timer1_ms(3000);
+					UltraMove = 1;
+				}
+
+
+
 				LCD_enuJumpCursorTo(1, 0);
 				LCD_enuSendString("AT Elevator");
 				mySendChar = FIRST_REKEB;
@@ -348,6 +348,21 @@ int main(void) {
 
 			}else{
 				// Meaning that the 2nd didn't receive a "FIRST_REKEB"
+
+				if(!UltraMove)
+				{
+					Motor_Move_ForWard(&DC_Motor1, 60);
+					Motor_Move_ForWard(&DC_Motor2, 60);
+					Delay_Timer1_ms(DELAY_HOME_ELEVATOR);
+					Motor_TurnOff(&DC_Motor1);
+					Motor_TurnOff(&DC_Motor2);
+
+					Delay_Timer1_ms(2000);
+
+					UltraMove = 1;
+				}
+
+
 				mySendChar = FIRST_REKEB;
 				MCAL_UART_SendData(USART2, &mySendChar, Enable);
 				MCAL_UART_ReceiveData(USART2, &RecievedFromServer, Enable);
@@ -357,13 +372,41 @@ int main(void) {
 			{
 				// Proceed with Parking procedures
 
-				Proceed_Parking(&DC_Motor1, &DC_Motor2);
+				//Proceed_Parking(&DC_Motor1, &DC_Motor2);
+				if(!ProceedParking)
+				{
+					Motor_Move_ForWard(&DC_Motor1, 60);
+					Motor_Move_ForWard(&DC_Motor2, 60);
+					Delay_Timer1_ms(DELAY_ELEVATOR_PARKING);
+					Motor_TurnOff(&DC_Motor1);
+					Motor_TurnOff(&DC_Motor2);
+
+//					Delay_Timer1_ms(5000);         // Mecahnism: Moving Stepper
+					Stepper_Move_Steps(TIMER4, TIMER_CH4, STEPPER_STEPS, 50, 700, Stepper_Down);  // B9 --> Step
+
+					Delay_Timer1_ms(4000);
+
+
+
+					Motor_Move_BackWard(&DC_Motor1, 60);
+					Motor_Move_BackWard(&DC_Motor2, 60);
+					Delay_Timer1_ms(2500);
+					Motor_TurnOff(&DC_Motor1);
+					Motor_TurnOff(&DC_Motor2);
+
+					Delay_Timer1_ms(4000);
+
+					ProceedParking = 1;
+				}
+
+
 				mySendChar = DONE_PARKING;
 				MCAL_UART_SendData(USART2, &mySendChar, Enable);
 				MCAL_UART_ReceiveData(USART2, &RecievedFromServer, Enable);
 
 
-			}else{
+			}
+			else{
 				mySendChar = ACK_STARTING;
 				MCAL_UART_SendData(USART2, &mySendChar, Enable);
 
@@ -372,13 +415,66 @@ int main(void) {
 
 			if(RecievedFromServer == ARRIVED_AT_ENTRY)
 			{
-				Delay_Timer1_ms(1000);
-				Proceed_BackToHome(&DC_Motor1, &DC_Motor2);
+				//Proceed_BackToHome(&DC_Motor1, &DC_Motor2);
+
+				Delay_Timer1_ms(2000);         // Mecahnism: Moving Stepper
+
+
+				if(!DoneHome)
+				{
+					Motor_Move_BackWard(&DC_Motor1, 60);
+					Motor_Move_BackWard(&DC_Motor2, 60);
+					Delay_Timer1_ms(DELAY_HOME_ELEVATOR);
+					Motor_TurnOff(&DC_Motor1);
+					Motor_TurnOff(&DC_Motor2);
+
+					Delay_Timer1_ms(4000);
+
+					DoneHome = 1;
+				}
+
+
+
+
+
 				mySendChar = FIRST_HOME;
 				MCAL_UART_SendData(USART2, &mySendChar, Enable);
 				MCAL_UART_ReceiveData(USART2, &RecievedFromServer, Enable);
 
-			}else{
+			}
+			else{
+				if(!ProceedParking)
+				{
+					Motor_Move_ForWard(&DC_Motor1, 60);
+					Motor_Move_ForWard(&DC_Motor2, 60);
+					Delay_Timer1_ms(DELAY_ELEVATOR_PARKING);
+					Motor_TurnOff(&DC_Motor1);
+					Motor_TurnOff(&DC_Motor2);
+
+					//Delay_Timer1_ms(5000);         // Mecahnism: Moving Stepper
+
+					Stepper_Move_Steps(TIMER4, TIMER_CH4, STEPPER_STEPS, 50, 700, Stepper_Down);  // B9 --> Step
+
+					Delay_Timer1_ms(4000);
+
+
+
+
+
+
+					Motor_Move_BackWard(&DC_Motor1, 60);
+					Motor_Move_BackWard(&DC_Motor2, 60);
+					Delay_Timer1_ms(2500);
+					Motor_TurnOff(&DC_Motor1);
+					Motor_TurnOff(&DC_Motor2);
+
+					Delay_Timer1_ms(4000);
+
+					ProceedParking = 1;
+				}
+
+
+
 				mySendChar = DONE_PARKING;
 				MCAL_UART_SendData(USART2, &mySendChar, Enable);
 				MCAL_UART_ReceiveData(USART2, &RecievedFromServer, Enable);
@@ -393,6 +489,22 @@ int main(void) {
 				MCAL_UART_ReceiveData(USART2, &RecievedFromServer, Enable);
 
 			}else{
+				if(!DoneHome)
+				{
+					Motor_Move_BackWard(&DC_Motor1, 60);
+					Motor_Move_BackWard(&DC_Motor2, 60);
+					Delay_Timer1_ms(DELAY_HOME_ELEVATOR);
+					Motor_TurnOff(&DC_Motor1);
+					Motor_TurnOff(&DC_Motor2);
+
+
+					Delay_Timer1_ms(4000);
+
+					DoneHome = 1;
+				}
+
+
+
 				mySendChar = FIRST_HOME;
 				MCAL_UART_SendData(USART2, &mySendChar, Enable);
 				MCAL_UART_ReceiveData(USART2, &RecievedFromServer, Enable);
@@ -462,12 +574,12 @@ void Proceed_Parking(Motor_Config_t *Motor1, Motor_Config_t *Motor2)
 	if(Ultra2Distance<=2){
 		// 8000 =~ 2cm
 		// Move stepper up
-				Stepper_Move_Steps(TIMER4, TIMER_CH4, 800, 50, 700, Stepper_UP);  // B9 --> Step
+		Stepper_Move_Steps(TIMER4, TIMER_CH4, 800, 50, 700, Stepper_UP);  // B9 --> Step
 
 	}else if(Ultra2Distance>=4){ // 5
 		// Move stepper down
-				Stepper_Move_Steps(TIMER4, TIMER_CH4, 800, 50, 700, Stepper_Down);  // B9 --> Step
-//
+		Stepper_Move_Steps(TIMER4, TIMER_CH4, 800, 50, 700, Stepper_Down);  // B9 --> Step
+		//
 	} // 3
 	else{
 
