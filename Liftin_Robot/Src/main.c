@@ -101,20 +101,18 @@ volatile uint8_t RecievedRekeb = 0;
 volatile uint8_t isFirstHome = 0;
 volatile uint8_t RecievedFirstHome = 0;
 
+uint8_t PreviousReceived = 0;
+
+
+volatile uint8_t isRetrieving = 0;
+volatile uint8_t isAParking = 0;
+
 
 uint16_t mySendChar = 0;
 
 
 volatile static uint8_t ReceivingCounter=0;
 
-
-typedef enum{
-	Idle=0,
-	Parking_Started,
-	Arrived_At_ParkingSlot,
-	Arrived_At_Entry,
-	Parking_Finished
-}Robot_State;
 
 
 uint16_t Buffer = 'Z';
@@ -132,12 +130,31 @@ void Proceed_BackToHome(Motor_Config_t *Motor1, Motor_Config_t *Motor2);
 void Proceed_Parking(Motor_Config_t *Motor1, Motor_Config_t *Motor2);
 
 
+
+typedef enum{
+	Idle=0,
+	Wait_Car_Ack,
+	Wait_Start_Parking,
+	Wait_In_Front_Of_Slot,
+	Wait_Arriving_At_Entry,
+	Wait_Finish_Parking,
+	Wait_ACK_Done,
+	DUMMY
+}Robot_State;
+
+
+Robot_State MyCurrentState = Idle;
+
+
+
 //
 
 volatile uint8_t newMessageArrived = 0;
 
 
-Robot_State MyCurrentState = Idle;
+volatile uint8_t initialSeverResponse = 0;
+
+
 uint32_t Ultra1Distance = 255;
 uint32_t Ultra2Distance = 0;
 
@@ -148,6 +165,7 @@ uint32_t Ultra2Distance = 0;
 uint8_t ProceedParking = 0;
 uint8_t DoneHome = 0;
 uint8_t UltraMove = 0;
+uint8_t Done_Stepper_Up = 0, Done_Stepper_Down = 0;
 
 float integral = 0;
 float derivative = 0;
@@ -157,16 +175,19 @@ float error_previous = 0;
 int correction_steps = 0;
 
 // Test succedded ----------------------------------------------------
-void UART_Test_Callback(void)
+void UART_Receiver_Callback(void)
 {
-	MCAL_UART_ReceiveData(USART2, &RecievedFromServer, Enable);
-	if(RecievedFromServer == PARKING_REQUEST || RecievedFromServer == RETRIEVAL_REQUEST){
-		newMessageArrived = 1;
-	}
 
+	MCAL_UART_ReceiveData(USART2, &initialSeverResponse, Disable);
+	if(initialSeverResponse == PARKING_REQUEST || initialSeverResponse == RETRIEVAL_REQUEST){
+		newMessageArrived = 1;
+		if(initialSeverResponse == PARKING_REQUEST)
+			isAParking = 1;
+		else if(initialSeverResponse == RETRIEVAL_REQUEST)
+			isRetrieving = 1;
+	}
 	MCAL_UART_SendData(USART2, &Buffer, Enable);
 }
-
 
 
 
@@ -220,20 +241,13 @@ int main(void) {
 	UART_Cfg.BaudRate = UART_BaudRate_115200;
 	UART_Cfg.HWFlowCtrl = UART_HWFlowCtrl_NONE;
 	UART_Cfg.IRQ_Enable = UART_IRQ_Enable_RXNE;
-	UART_Cfg.P_IRQ_CallBack = UART_Test_Callback;
+	UART_Cfg.P_IRQ_CallBack = UART_Receiver_Callback;
 	UART_Cfg.Parity = UART_Parity_NONE;
 	UART_Cfg.Payload_length = UART_Payload_Length_8B;
 	UART_Cfg.StopBits = UART_StopBits_1;
 	UART_Cfg.USART_Mode = UART_Mode_Tx_Rx;
 	MCAL_UART_Init(USART2, &UART_Cfg);
 	MCAL_UART_GPIO_SetPins(USART2);
-
-
-
-	//RCC_GPIOC_CLK_EN();
-
-
-
 
 
 	Motor_intialize(&DC_Motor1);
@@ -249,32 +263,30 @@ int main(void) {
 
 	/* Loop forever */
 	while (1) {
-
-
-		////		Stepper_Move_Steps(TIMER4, TIMER_CH4, 8000, 50, 500, Stepper_UP);
-		//		Stepper_Move_Steps(TIMER4, TIMER_CH4, 800, 50, 700, Stepper_UP);  // B9 --> Step
-		//		Delay_Timer1_ms(500);
-
-
-		if(newMessageArrived)
+		switch(MyCurrentState)
+		{
+		case Idle:
 		{
 
-			newMessageArrived = 0;
+			if(initialSeverResponse == PARKING_REQUEST || initialSeverResponse == RETRIEVAL_REQUEST || PreviousReceived == PARKING_REQUEST || PreviousReceived == RETRIEVAL_REQUEST ){
+				PreviousReceived = initialSeverResponse;
 
 
-			if (RecievedFromServer == PARKING_REQUEST || RecievedFromServer == RETRIEVAL_REQUEST)
-			{
-				ProceedParking = 0;
-				DoneHome = 0;
-				UltraMove = 0;
+				USART_Disable_IRQ();
+
+
 				mySendChar = RECEIVED_OK;
 
 				MCAL_UART_SendData(USART2, &mySendChar, Enable);
 
-				Stepper_Move_Steps(TIMER4, TIMER_CH4, STEPPER_STEPS, 50, 700, Stepper_UP);  // B9 --> Step
 
+				if(!Done_Stepper_Up)
+				{
+					Stepper_Move_Steps(TIMER4, TIMER_CH4, STEPPER_STEPS, 50, 700, Stepper_UP);  // B9 --> Step
+					Delay_Timer1_ms(4000);
 
-				Delay_Timer1_ms(4000);
+					Done_Stepper_Up = 1;
+				}
 
 
 				do{
@@ -287,253 +299,208 @@ int main(void) {
 				MCAL_UART_SendData(USART2, &mySendChar, Enable);
 				MCAL_UART_ReceiveData(USART2, &RecievedFromServer, Enable);
 
-			}
-			if(RecievedFromServer == ACK_CAR_ARRIVED)
-			{
-				// Move to the Elevator, then send a "FIRST_REKEB"
-				LCD_enuJumpCursorTo(1, 0);
-				LCD_enuSendString("GOING_ToElevator");
-
-				if(!UltraMove)
+				if(RecievedFromServer == ACK_CAR_ARRIVED)
 				{
-					Motor_Move_ForWard(&DC_Motor1, 60);
-					Motor_Move_ForWard(&DC_Motor2, 60);
-					Delay_Timer1_ms(DELAY_HOME_ELEVATOR);
-					Motor_TurnOff(&DC_Motor1);
-					Motor_TurnOff(&DC_Motor2);
-
-					Delay_Timer1_ms(2000);
-
-					UltraMove = 1;
+					MyCurrentState = Wait_Car_Ack;
 				}
 
-
-
-				LCD_enuJumpCursorTo(1, 0);
-				LCD_enuSendString("AT Elevator");
-				mySendChar = FIRST_REKEB;
-				MCAL_UART_SendData(USART2, &mySendChar, Enable);
-				MCAL_UART_ReceiveData(USART2, &RecievedFromServer, Enable);
-			}else{
-				mySendChar = RECEIVED_OK;
-				MCAL_UART_SendData(USART2, &mySendChar, Enable);
-				MCAL_UART_ReceiveData(USART2, &RecievedFromServer, Enable);
-
-				do{
-					HC_SR04_ReadDistance(0, &Ultra1Distance);
-					Delay_Timer1_ms(80);
-
-				}while(Ultra1Distance > 20);
-
-				mySendChar = CAR_ARRIVED;
-				MCAL_UART_SendData(USART2, &mySendChar, Enable);
-				MCAL_UART_ReceiveData(USART2, &RecievedFromServer, Enable);
-
 			}
+		}
+		break;
 
 
-			if (RecievedFromServer == START_PARKING)
+		case Wait_Car_Ack:
+		{
+			// Move to the Elevator, then send a "FIRST_REKEB"
+			LCD_enuJumpCursorTo(1, 0);
+			LCD_enuSendString("GOING_ToElevator");
+
+			if(!UltraMove)
 			{
-				// Meaning that the 2d received a "FIRST_REKEB", and start Moving Procedures
+				Motor_Move_ForWard(&DC_Motor1, 60);
+				Motor_Move_ForWard(&DC_Motor2, 60);
+				Delay_Timer1_ms(DELAY_HOME_ELEVATOR);
+				Motor_TurnOff(&DC_Motor1);
+				Motor_TurnOff(&DC_Motor2);
 
-				// Waiting for "ARRIVED_INFRONTOF_SLOT"
+				Delay_Timer1_ms(2000);
 
-				mySendChar = ACK_STARTING;
-				MCAL_UART_SendData(USART2, &mySendChar, Enable);
-
-				MCAL_UART_ReceiveData(USART2, &RecievedFromServer, Enable);
-
-
-				// Potentially not working
-
-			}else{
-				// Meaning that the 2nd didn't receive a "FIRST_REKEB"
-
-				if(!UltraMove)
-				{
-					Motor_Move_ForWard(&DC_Motor1, 60);
-					Motor_Move_ForWard(&DC_Motor2, 60);
-					Delay_Timer1_ms(DELAY_HOME_ELEVATOR);
-					Motor_TurnOff(&DC_Motor1);
-					Motor_TurnOff(&DC_Motor2);
-
-					Delay_Timer1_ms(2000);
-
-					UltraMove = 1;
-				}
-
-
-				mySendChar = FIRST_REKEB;
-				MCAL_UART_SendData(USART2, &mySendChar, Enable);
-				MCAL_UART_ReceiveData(USART2, &RecievedFromServer, Enable);
+				UltraMove = 1;
 			}
+
+
+
+			LCD_enuJumpCursorTo(1, 0);
+			LCD_enuSendString("AT Elevator");
+			mySendChar = FIRST_REKEB;
+			MCAL_UART_SendData(USART2, &mySendChar, Enable);
+			MCAL_UART_ReceiveData(USART2, &RecievedFromServer, Enable);
+
+			if(RecievedFromServer == START_PARKING)
+			{
+				MyCurrentState = Wait_Start_Parking;
+			}
+		}
+		break;
+
+
+
+		case Wait_Start_Parking:
+		{
+
+			mySendChar = ACK_STARTING;
+			MCAL_UART_SendData(USART2, &mySendChar, Enable);
+
+			MCAL_UART_ReceiveData(USART2, &RecievedFromServer, Enable);
 
 			if(RecievedFromServer == ARRIVED_INFRONTOF_SLOT)
 			{
-				// Proceed with Parking procedures
+				MyCurrentState = Wait_In_Front_Of_Slot;
+			}
 
-				//Proceed_Parking(&DC_Motor1, &DC_Motor2);
-				if(!ProceedParking)
+		}
+
+		break;
+
+
+
+		case Wait_In_Front_Of_Slot:
+		{
+			if(!ProceedParking)
+			{
+				Motor_Move_ForWard(&DC_Motor1, 60);
+				Motor_Move_ForWard(&DC_Motor2, 60);
+				Delay_Timer1_ms(DELAY_ELEVATOR_PARKING);
+				Motor_TurnOff(&DC_Motor1);
+				Motor_TurnOff(&DC_Motor2);
+
+
+				if(!Done_Stepper_Down)
 				{
-					Motor_Move_ForWard(&DC_Motor1, 60);
-					Motor_Move_ForWard(&DC_Motor2, 60);
-					Delay_Timer1_ms(DELAY_ELEVATOR_PARKING);
-					Motor_TurnOff(&DC_Motor1);
-					Motor_TurnOff(&DC_Motor2);
-
-//					Delay_Timer1_ms(5000);         // Mecahnism: Moving Stepper
 					Stepper_Move_Steps(TIMER4, TIMER_CH4, STEPPER_STEPS, 50, 700, Stepper_Down);  // B9 --> Step
-
 					Delay_Timer1_ms(4000);
 
-
-
-					Motor_Move_BackWard(&DC_Motor1, 60);
-					Motor_Move_BackWard(&DC_Motor2, 60);
-					Delay_Timer1_ms(2500);
-					Motor_TurnOff(&DC_Motor1);
-					Motor_TurnOff(&DC_Motor2);
-
-					Delay_Timer1_ms(4000);
-
-					ProceedParking = 1;
+					Done_Stepper_Down = 1;
 				}
 
 
-				mySendChar = DONE_PARKING;
-				MCAL_UART_SendData(USART2, &mySendChar, Enable);
-				MCAL_UART_ReceiveData(USART2, &RecievedFromServer, Enable);
 
 
+
+				Motor_Move_BackWard(&DC_Motor1, 60);
+				Motor_Move_BackWard(&DC_Motor2, 60);
+				Delay_Timer1_ms(2500);
+				Motor_TurnOff(&DC_Motor1);
+				Motor_TurnOff(&DC_Motor2);
+
+				Delay_Timer1_ms(4000);
+
+				ProceedParking = 1;
 			}
-			else{
-				mySendChar = ACK_STARTING;
-				MCAL_UART_SendData(USART2, &mySendChar, Enable);
 
-				MCAL_UART_ReceiveData(USART2, &RecievedFromServer, Enable);
-			}
+
+			mySendChar = DONE_PARKING;
+			MCAL_UART_SendData(USART2, &mySendChar, Enable);
+			MCAL_UART_ReceiveData(USART2, &RecievedFromServer, Enable);
 
 			if(RecievedFromServer == ARRIVED_AT_ENTRY)
 			{
-				//Proceed_BackToHome(&DC_Motor1, &DC_Motor2);
-
-				Delay_Timer1_ms(2000);         // Mecahnism: Moving Stepper
-
-
-				if(!DoneHome)
-				{
-					Motor_Move_BackWard(&DC_Motor1, 60);
-					Motor_Move_BackWard(&DC_Motor2, 60);
-					Delay_Timer1_ms(DELAY_HOME_ELEVATOR);
-					Motor_TurnOff(&DC_Motor1);
-					Motor_TurnOff(&DC_Motor2);
-
-					Delay_Timer1_ms(4000);
-
-					DoneHome = 1;
-				}
-
-
-
-
-
-				mySendChar = FIRST_HOME;
-				MCAL_UART_SendData(USART2, &mySendChar, Enable);
-				MCAL_UART_ReceiveData(USART2, &RecievedFromServer, Enable);
-
+				MyCurrentState = Wait_Arriving_At_Entry;
 			}
-			else{
-				if(!ProceedParking)
-				{
-					Motor_Move_ForWard(&DC_Motor1, 60);
-					Motor_Move_ForWard(&DC_Motor2, 60);
-					Delay_Timer1_ms(DELAY_ELEVATOR_PARKING);
-					Motor_TurnOff(&DC_Motor1);
-					Motor_TurnOff(&DC_Motor2);
-
-					//Delay_Timer1_ms(5000);         // Mecahnism: Moving Stepper
-
-					Stepper_Move_Steps(TIMER4, TIMER_CH4, STEPPER_STEPS, 50, 700, Stepper_Down);  // B9 --> Step
-
-					Delay_Timer1_ms(4000);
+		}
+		break;
 
 
+		case Wait_Arriving_At_Entry:
+		{
 
 
+			if(!DoneHome)
+			{
+				Motor_Move_BackWard(&DC_Motor1, 60);
+				Motor_Move_BackWard(&DC_Motor2, 60);
+				Delay_Timer1_ms(DELAY_HOME_ELEVATOR);
+				Motor_TurnOff(&DC_Motor1);
+				Motor_TurnOff(&DC_Motor2);
 
+				Delay_Timer1_ms(4000);
 
-					Motor_Move_BackWard(&DC_Motor1, 60);
-					Motor_Move_BackWard(&DC_Motor2, 60);
-					Delay_Timer1_ms(2500);
-					Motor_TurnOff(&DC_Motor1);
-					Motor_TurnOff(&DC_Motor2);
-
-					Delay_Timer1_ms(4000);
-
-					ProceedParking = 1;
-				}
-
-
-
-				mySendChar = DONE_PARKING;
-				MCAL_UART_SendData(USART2, &mySendChar, Enable);
-				MCAL_UART_ReceiveData(USART2, &RecievedFromServer, Enable);
-
+				DoneHome = 1;
 			}
 
 
+
+
+
+			mySendChar = FIRST_HOME;
+			MCAL_UART_SendData(USART2, &mySendChar, Enable);
+			MCAL_UART_ReceiveData(USART2, &RecievedFromServer, Enable);
+
+			if(RecievedFromServer == FINISH_PARKING)
+			{
+				MyCurrentState = Wait_Finish_Parking;
+			}
+
+		}
+		break;
+
+
+		case Wait_Finish_Parking:
+		{
 			if(RecievedFromServer == FINISH_PARKING )
 			{
 				mySendChar = IM_DONE;
 				MCAL_UART_SendData(USART2, &mySendChar, Enable);
 				MCAL_UART_ReceiveData(USART2, &RecievedFromServer, Enable);
 
-			}else{
-				if(!DoneHome)
+				if(RecievedFromServer == ACK_DONE)
 				{
-					Motor_Move_BackWard(&DC_Motor1, 60);
-					Motor_Move_BackWard(&DC_Motor2, 60);
-					Delay_Timer1_ms(DELAY_HOME_ELEVATOR);
-					Motor_TurnOff(&DC_Motor1);
-					Motor_TurnOff(&DC_Motor2);
-
-
-					Delay_Timer1_ms(4000);
-
-					DoneHome = 1;
+					MyCurrentState = Wait_ACK_Done;
 				}
 
 
 
-				mySendChar = FIRST_HOME;
-				MCAL_UART_SendData(USART2, &mySendChar, Enable);
-				MCAL_UART_ReceiveData(USART2, &RecievedFromServer, Enable);
 			}
+		}
+		break;
 
 
+		case Wait_ACK_Done:
+		{
+			LCD_enuJumpCursorTo(1, 0);
+			LCD_enuSendString("AT HOME");
 
-			if(RecievedFromServer == ACK_DONE)
-			{
-				LCD_enuJumpCursorTo(1, 0);
-				LCD_enuSendString("AT HOME");
-				RecievedFromServer = 0;
+			isAParking = 0;
+			isRetrieving = 0;
+			MyCurrentState = Idle;
+			initialSeverResponse = 0;
+			PreviousReceived = 0;
+			ProceedParking = 0;
+			DoneHome = 0;
+			UltraMove = 0;
+			Done_Stepper_Down = 0;
+			Done_Stepper_Up = 0;
 
-			}else{
-				mySendChar = IM_DONE;
-				MCAL_UART_SendData(USART2, &mySendChar, Enable);
 
-			}
+			USART_Enable_IRQ();
+
 
 
 		}
 
+		break;
 
+
+		case DUMMY:
+		{
+
+		}
+		break;
+
+		}
 
 
 	}
-
-
-
 }
 
 

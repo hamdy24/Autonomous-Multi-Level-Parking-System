@@ -7,7 +7,7 @@
 
 const char* ssid = "Orange-9ptg";
 const char* password = "75934821Aa@";
-const char* api_url = "http://192.168.1.8/my-api/amdy.php";
+const char* api_url = "http://192.168.1.2/my-api/amdy.php";
 
 WiFiClient client;
 HTTPClient http;
@@ -118,7 +118,6 @@ void loop() {
     char ServerRequest = intToChar(Http_Read_ServerRequest());
 
   
-    ServerRequest = ServerRequest;  // ---> Just change this in case of retrieving
     STM_SERIAL.write(ServerRequest);
     DEBUG_SERIAL.print(ServerRequest);
     DEBUG_SERIAL.print(PARKING_REQUEST);
@@ -131,7 +130,6 @@ void loop() {
     }
 
     // Should be updated from server
-    ServerRequest = PARKING_REQUEST;  // ---> Just change this in case of retrieving
     if(ServerRequest == PARKING_REQUEST)
       isParking = true;
     else if(ServerRequest == RETRIEVAL_REQUEST)
@@ -139,6 +137,7 @@ void loop() {
 
     STM_SERIAL.write(ServerRequest);
     DEBUG_SERIAL.print(ServerRequest);
+
     char c = STM_SERIAL.read();
     while(c != RECEIVED_OK){    // Wait till receiveing el ok
       STM_SERIAL.write(ServerRequest);
@@ -156,6 +155,7 @@ void loop() {
     char r = intToChar(Http_Read_FirstRobotStatus());     // Get First Robot state from Database
     while(r != FIRST_REKEB)
     {
+      DEBUG_SERIAL.print("Waiting a [FIRST_REKEB] from DB");
       r = intToChar(Http_Read_FirstRobotStatus());
       delay(100);
     }
@@ -163,6 +163,7 @@ void loop() {
 
     c = STM_SERIAL.read();
     while((c != START_PARKING) && (c != START_RETRIEVING)){    // Wait till receiveing el ok
+      DEBUG_SERIAL.print("Sending a [FIRST_REKEB] Signal");
       STM_SERIAL.write(FIRST_REKEB);
       c = STM_SERIAL.read();
       DEBUG_SERIAL.print(c);
@@ -189,7 +190,7 @@ void loop() {
     Http_Update_Robot2_Status(charToInt(ARRIVED_INFRONTOF_SLOT));
 
 
-    delay(1000);   // Simulation of time taking to park the car
+    // delay(1000);   // Simulation of time taking to park the car
 
     if(isParking){
       DEBUG_SERIAL.print("Sending a [DONE_PARKING] Signal");
@@ -216,7 +217,7 @@ void loop() {
     else if(isRetreiving)
       STM_SERIAL.write(DONE_RETREIVING); 
 
-    delay(1300);   // Delay for waiting to back to entry
+    // delay(1300);   // Delay for waiting to back to entry
     c = STM_SERIAL.read();
     while(c != ARRIVED_AT_ENTRY){    // Wait till receiveing el ok
       if(isParking)
@@ -229,7 +230,7 @@ void loop() {
     }
     Http_Update_Robot2_Status(charToInt(ARRIVED_AT_ENTRY));
     
-    delay(1000);   // Delay to simulate first robot time to back to its home
+    // delay(1000);   // Delay to simulate first robot time to back to its home
     DEBUG_SERIAL.print("Sending a [FIRST_HOME] Signal");
     DEBUG_SERIAL.println(FIRST_HOME);
 
@@ -394,27 +395,6 @@ void Http_Update_ServerRequest(int new_request)
 }
 
 
-
-
-// void Http_Update_Robot1_Status(int new_robot1_state)
-// {
-//   String action = "update_robot1";
-//   String payload = "action=" + action + "&robot1_state=" + String(new_robot1_state) + "&version=" + String(3);
-
-//   http.begin(client, api_url);
-//   http.addHeader("Content-Type", "application/x-www-form-urlencoded");
-  
-//   // Send the POST request
-//   int httpResponseCode = http.POST(payload);
-
-//   if (httpResponseCode == HTTP_CODE_OK) {
-//     String response = http.getString();
-//     DEBUG_SERIAL.print("Response: ");
-//     DEBUG_SERIAL.println(response);
-//   }
-
-//   http.end();
-// }
 
 
 

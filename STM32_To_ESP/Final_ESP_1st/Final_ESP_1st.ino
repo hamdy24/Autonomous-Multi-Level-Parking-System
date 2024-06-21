@@ -24,21 +24,21 @@
 #define RETRIEVAL_REQUEST     'L'
 #define START_RETRIEVING       'M'
 #define FINISH_RETRIEVING        'N'
-#define DONE_RETREIVING			'O'
+#define DONE_RETREIVING     'O'
 
-#define CAR_ARRIVED				'P'
+#define CAR_ARRIVED       'P'
 
 // commit
 
 
-#define ACK_STARTING			'Q'
-#define ACK_DONE				'R'
-#define ACK_CAR_ARRIVED				'S'
-#define ACK_ARIV_AT_SLOT		'T'
+#define ACK_STARTING      'Q'
+#define ACK_DONE        'R'
+#define ACK_CAR_ARRIVED       'S'
+#define ACK_ARIV_AT_SLOT    'T'
 
 
-#define LIFTING_INIT		'U'
-#define ELEV_INIT			'V'
+#define LIFTING_INIT    'U'
+#define ELEV_INIT     'V'
 
 #define IDLE_STATE    'W'
 #define PENDING_STATE    'X'
@@ -65,7 +65,14 @@ char c;
 int i=0;
 const char* ssid = "Orange-9ptg";
 const char* password = "75934821Aa@";
-const char* api_url = "http://192.168.1.8/my-api/amdy.php";
+const char* api_url = "http://192.168.1.2/my-api/amdy.php";
+
+// Thouggggggggggggggggggggggggggggggggggghhhhhhhhhhhhhhhhhhhtssss
+
+// ------------- Make our process a critical section
+// ------------- Reconsider delays in the esp codesssssssssss
+
+
 const int ledPin = 5; 
 
 int robot2_state = 0;
@@ -103,13 +110,7 @@ void loop() {
 
     char ServerRequest = intToChar(Http_Read_ServerRequest());
 
-  
-    STM_SERIAL.write(ServerRequest);
-
     DEBUG_SERIAL.print(ServerRequest);
-    DEBUG_SERIAL.print(PARKING_REQUEST);
-    DEBUG_SERIAL.print(ServerRequest == PARKING_REQUEST);
-
 
     while((ServerRequest != PARKING_REQUEST) && (ServerRequest != RETRIEVAL_REQUEST))
     {
@@ -118,11 +119,11 @@ void loop() {
       delay(100);
     }
 
-    
+    STM_SERIAL.write(ServerRequest);
 
     c = STM_SERIAL.read();
     while(c != RECEIVED_OK){    // Wait till receiveing el ok
-      STM_SERIAL.write(PARKING_REQUEST);
+      STM_SERIAL.write(ServerRequest);
       c = STM_SERIAL.read();
       DEBUG_SERIAL.println("Waiting for [RECEIVED_OK]");
       delay(100);    
@@ -225,6 +226,9 @@ void loop() {
     }
 
     Http_Update_Robot1_Status(charToInt(IM_DONE));
+
+    STM_SERIAL.write(ACK_DONE);
+
 
     DEBUG_SERIAL.println("Celebrating Done parking");
 
