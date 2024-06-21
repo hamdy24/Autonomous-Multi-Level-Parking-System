@@ -62,13 +62,20 @@
 #define LIFTING_INIT		'U'
 #define ELEV_INIT			'V'
 
+#define ACK_SLOT_NUMBER 'Y'
 
-#define DELAY_SLOT_TO_SLOT 					3000
+#define DELAY_SLOT_TO_SLOT 					700
 #define DELAY_PROCESS_TO_PROCESS			3000
+
+
+#define MOTORS_SPEED	80
 
 
 
 volatile uint8_t RecievedFromServer = 0;
+
+
+int SlotNumber = 0;
 
 uint8_t PreviousReceived = 0;
 
@@ -83,6 +90,7 @@ uint16_t mySendChar = 0;
 
 typedef enum{
 	Idle=0,
+	Wait_Slot_Number,
 	Wait_First_Rekeb,
 	Wait_Done_Parking,
 	Done_First_Home,
@@ -96,9 +104,14 @@ uint16_t Buffer = 'Z';
 
 
 
+
+
 volatile uint8_t newMessageArrived = 0;
 
 volatile uint8_t initialSeverResponse = 0;
+
+
+
 
 
 Robot_State MyCurrentState = DUMMY;
@@ -244,13 +257,35 @@ int main(void) {
 				MCAL_UART_SendData(USART2, &mySendChar, Enable);
 				MCAL_UART_ReceiveData(USART2, &RecievedFromServer, Enable);
 
-				if(RecievedFromServer == FIRST_REKEB){
-					MyCurrentState = Wait_First_Rekeb;
+
+				RecievedFromServer = RecievedFromServer - '0';
+
+				if(RecievedFromServer >= 1 && RecievedFromServer <= 6){
+					SlotNumber = RecievedFromServer;
+					MyCurrentState = Wait_Slot_Number;
 				}
 			}
 		}
 		break;
 
+
+		case Wait_Slot_Number:
+		{
+			mySendChar = ACK_SLOT_NUMBER;
+
+			MCAL_UART_SendData(USART2, &mySendChar, Enable);
+
+
+
+			MCAL_UART_ReceiveData(USART2, &RecievedFromServer, Enable);
+
+			if(RecievedFromServer == FIRST_REKEB){
+				MyCurrentState = Wait_First_Rekeb;
+			}
+
+
+		}
+		break;
 
 
 		case Wait_First_Rekeb:
@@ -274,12 +309,18 @@ int main(void) {
 
 			while(!Done_Arriving_At_Slot_Forward)
 			{
-				Motor_Move_ForWard(&DC_Motor1, 100);
-				Motor_Move_ForWard(&DC_Motor2, 100);
-				Delay_Timer1_ms(DELAY_SLOT_TO_SLOT);
-				Motor_TurnOff(&DC_Motor1);
-				Motor_TurnOff(&DC_Motor2);
+
+				if((SlotNumber - 1 ))
+				{
+					Motor_Move_ForWard(&DC_Motor1, MOTORS_SPEED);
+					Motor_Move_ForWard(&DC_Motor2, MOTORS_SPEED);
+					Delay_Timer1_ms(DELAY_SLOT_TO_SLOT * (SlotNumber - 1));
+					Motor_TurnOff(&DC_Motor1);
+					Motor_TurnOff(&DC_Motor2);
+				}
+
 				Delay_Timer1_ms(DELAY_PROCESS_TO_PROCESS);
+
 
 				//					Stepper_Move_Steps(TIMER4, TIMER_CH4, 800, 50, 700, Stepper_UP);  // B9 --> RED Step
 				//					Stepper_Move_Steps(TIMER4, TIMER_CH2, 800, 50, 1100, Stepper_UP);  // B7 --> BLUE Step
@@ -306,11 +347,15 @@ int main(void) {
 		{
 			while(!Done_Arriving_At_Slot_Backward)
 			{
-				Motor_Move_BackWard(&DC_Motor1, 100);
-				Motor_Move_BackWard(&DC_Motor2, 100);
-				Delay_Timer1_ms(DELAY_SLOT_TO_SLOT);
-				Motor_TurnOff(&DC_Motor1);
-				Motor_TurnOff(&DC_Motor2);
+				if((SlotNumber - 1 ))
+				{
+					Motor_Move_BackWard(&DC_Motor1, MOTORS_SPEED);
+					Motor_Move_BackWard(&DC_Motor2, MOTORS_SPEED);
+					Delay_Timer1_ms(DELAY_SLOT_TO_SLOT * (SlotNumber - 1));
+					Motor_TurnOff(&DC_Motor1);
+					Motor_TurnOff(&DC_Motor2);
+				}
+
 				Delay_Timer1_ms(DELAY_PROCESS_TO_PROCESS);
 				Done_Arriving_At_Slot_Backward = 1;
 

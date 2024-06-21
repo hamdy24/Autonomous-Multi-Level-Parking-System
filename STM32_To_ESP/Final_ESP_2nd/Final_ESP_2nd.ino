@@ -38,14 +38,17 @@ bool isParking = false, isRetreiving = false;
 #define RETRIEVAL_REQUEST     'L'
 #define START_RETRIEVING       'M'
 #define FINISH_RETRIEVING        'N'
-#define DONE_RETREIVING			'O'
+#define DONE_RETREIVING     'O'
 
-#define LIFTING_INIT		'U'
-#define ELEV_INIT			'V'
+#define LIFTING_INIT    'U'
+#define ELEV_INIT     'V'
 
 
 #define IDLE_STATE    'W'
 #define PENDING_STATE    'X'
+
+
+#define ACK_SLOT_NUMBER 'Y'
 
 
 #define DEBUG_SERIAL          Serial
@@ -67,7 +70,7 @@ int Http_Read_FirstRobotStatus(void);
 void Http_Update_Robot2_Status(int new_robot2_state);
 int Http_Read_ServerRequest();
 void Http_Update_ServerRequest(int new_request);
-
+int Http_Read_Slot_Number();
 //void Http_Update_Robot1_Status(int new_robot1_state);
 
 // -------------- Helper Functions
@@ -129,6 +132,16 @@ void loop() {
       delay(100);
     }
 
+    char SlotNumber = (Http_Read_Slot_Number()) + '0';
+
+
+    while((SlotNumber < '1') || (SlotNumber > '6'))
+    {
+      SlotNumber = (Http_Read_Slot_Number()) + '0';
+      DEBUG_SERIAL.println("Waiting for [Valid Slot Number]");
+      delay(100);
+    }
+
     // Should be updated from server
     if(ServerRequest == PARKING_REQUEST)
       isParking = true;
@@ -147,10 +160,18 @@ void loop() {
     }
 
 
-    DEBUG_SERIAL.print("Sending a [FIRST_REKEB] Signal");
-    DEBUG_SERIAL.println(FIRST_REKEB);
+    STM_SERIAL.write(SlotNumber);
+    DEBUG_SERIAL.print("Sending Slot no.: ");
+    DEBUG_SERIAL.println(SlotNumber);
 
-    //Http_Update_Robot1_Status(charToInt(FIRST_REKEB));   // As a simulation that this change done by the first robot
+    c = STM_SERIAL.read();
+    while(c != ACK_SLOT_NUMBER){    // Wait till receiveing el ok
+      STM_SERIAL.write(SlotNumber);
+      c = STM_SERIAL.read();
+      DEBUG_SERIAL.println("Waiting for [ACK_SLOT_NUMBER]");
+      delay(100);
+    }
+
     
     char r = intToChar(Http_Read_FirstRobotStatus());     // Get First Robot state from Database
     while(r != FIRST_REKEB)
@@ -353,6 +374,39 @@ int Http_Read_ServerRequest()
 }
 
 
+
+int Http_Read_Slot_Number()
+{
+  String action = "get_data";
+  String payload = "action=" + action;
+
+  http.begin(client, api_url);
+  http.addHeader("Content-Type", "application/x-www-form-urlencoded");
+  
+  // Send the POST request
+  int httpResponseCode = http.POST(payload);
+  int request = 0;
+
+  if (httpResponseCode == HTTP_CODE_OK) {
+    String response = http.getString();
+    Serial.print("Response: ");
+    Serial.println(response);
+
+    // Parse JSON response
+    DynamicJsonDocument doc(512); // Adjust the buffer size as needed
+    deserializeJson(doc, response);
+
+    // Extract robot1_state
+    request = doc["slot_number"];
+    DEBUG_SERIAL.print("Slot Number: ");
+    DEBUG_SERIAL.println(request);
+    http.end();  
+  }
+
+  return request;
+}
+
+
 void Http_Update_Robot2_Status(int new_robot2_state)
 {
   String action = "update_robot2";
@@ -397,6 +451,27 @@ void Http_Update_ServerRequest(int new_request)
 
 
 
+// void Http_Update_Robot1_Status(int new_robot1_state)
+// {
+//   String action = "update_robot1";
+//   String payload = "action=" + action + "&robot1_state=" + String(new_robot1_state) + "&version=" + String(3);
+
+//   http.begin(client, api_url);
+//   http.addHeader("Content-Type", "application/x-www-form-urlencoded");
+  
+//   // Send the POST request
+//   int httpResponseCode = http.POST(payload);
+
+//   if (httpResponseCode == HTTP_CODE_OK) {
+//     String response = http.getString();
+//     DEBUG_SERIAL.print("Response: ");
+//     DEBUG_SERIAL.println(response);
+//   }
+
+//   http.end();
+// }
+
+
 
 int charToInt(char a)
 {
@@ -408,3 +483,6 @@ char intToChar(int b)
 {
   return (b + 'A');
 }
+
+
+
