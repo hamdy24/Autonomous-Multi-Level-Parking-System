@@ -10,9 +10,9 @@
 SoftwareSerial STM_SERIAL(RX_PIN, TX_PIN, false);  // Create a SoftwareSerial object
 
 
-const char* ssid = "Orange-9ptg";
-const char* password = "75934821Aa@";
-const char* serverIP = "192.168.1.9";  // IP address of your local server
+const char* ssid = "hamdy";
+const char* password = "pass1234";
+const char* serverIP = "192.168.202.146";  // IP address of your local server
 const int serverPort = 8001;
 
 WiFiClient client;
@@ -32,7 +32,7 @@ void setup() {
   pinMode(TX_PIN, OUTPUT);
 
   Serial.begin(115200);
-  STM_SERIAL.begin(115200);  // Initialize Serial communication with your device
+  STM_SERIAL.begin(9600);  // Initialize Serial communication with your device
 
   WiFi.begin(ssid, password);
 
@@ -62,12 +62,12 @@ void loop() {
 
         // Read data length from the server
         client.read(ServerDataLength, 1);
-        delay(10);
+        delay(2);
 
         while(ServerDataLength[0] == 0)
         {
           client.read(ServerDataLength, 1);
-          delay(10);
+          delay(2);
         }
 
         // Fill the buffer with the data from the server (of length 'ServerDataLength[0]')
@@ -82,12 +82,11 @@ void loop() {
         while(c != 1 && c != '1' && c != 49)
         {
           c = STM_SERIAL.read();
-          delay(10);
+          delay(2);
         }
         
         STM_SERIAL.write(ServerDataLength[0]); // send length to STM
         Serial.println(ServerDataLength[0]);  // For Debugging NodeMCU
-        // Serial.swap(12);
 
         for (int i = 0; i < 200; i++) {
           STM_SERIAL.write(Buffer[i]);  // Loop to send the Buffer data to STM
@@ -115,7 +114,7 @@ void loop() {
           Serial.println(STM_Response[i]);
         }
 
-        delay(10);
+        delay(2);
 
         // STM_SERIAL.read(&STM_Response[0], 1);   // ACK, DataLength, Payload Status
         // while((int)(STM_Response[0]) != 205 && (int)(STM_Response[0]) != 171)
@@ -157,6 +156,7 @@ void loop() {
           {
             STM_Response[i] = 0;
           }
+
           // client.read(Payload_Terminator, 1);
           // Serial.print("Payload_Terminator: ");
           // Serial.println(Payload_Terminator[0]);

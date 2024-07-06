@@ -111,8 +111,13 @@ int main(void)
 		if(ConnInitiate == 1 || ConnInitiate == '1' || ConnInitiate == 49){
 			//		  BL_SendMessage("Started Process");
 			HAL_UART_Transmit(BL_COMM_PORT,(uint8_t*)&ConnInitiate,1,HAL_MAX_DELAY);
-			ConnInitiate = 0;
+
 			BL_FeatchHostCommand();
+
+			ConnInitiate = 0;
+
+
+
 
 //			HAL_UART_Receive(&huart2, (uint8_t*)&Payload_Terminator, 1, HAL_MAX_DELAY);
 //			if(Payload_Terminator == '#')
@@ -124,11 +129,11 @@ int main(void)
 //			}else{
 //				// Payload_Terminator format is incorrect
 //			}
-		}else{
+		}
 			// SRAM
 			// Jump to 0x8008000
 			// Consider spaces and new lines
-		}
+
 		/* USER CODE END WHILE */
 
 		/* USER CODE BEGIN 3 */

@@ -45,12 +45,14 @@ BL_status BL_FeatchHostCommand()
 		Host_buffer[i] = 0;
 	}
 
+
 	Hal_status = HAL_UART_Receive(BL_COMM_PORT,Host_buffer,1,HAL_MAX_DELAY);
 	while(Host_buffer[0] == 0)
 	{
 		Hal_status = HAL_UART_Receive(BL_COMM_PORT,Host_buffer,1,HAL_MAX_DELAY);
 		HAL_Delay(100);
 	}
+
 
 
 	Hal_status = HAL_UART_Receive(BL_COMM_PORT,&Host_buffer[1],199,HAL_MAX_DELAY);
@@ -205,52 +207,38 @@ static void BL_Flash_Erase(uint8_t *Host_buffer)
 }
 
 uint16_t i=0;
+static void BL_Write_Data(uint8_t *Host_buffer) {
+    uint8_t Address_verify = ADDRESS_IS_INVALID;
+    uint32_t Address_Host = 0x8008000;
+    uint8_t DataLen = 0;
+    uint8_t payload_status = FLASH_PAYLOAD_WRITE_FAILED;
+    uint16_t Host_Packet_Len = 0;
+    uint32_t CRC_value = 0;
 
-static void BL_Write_Data(uint8_t *Host_buffer)
-{
-	uint8_t Adress_varfiy=ADDRESS_IS_INVALID;
-	uint32_t Address_Host=0x8008000;
-	uint8_t DataLen=0;
-	uint8_t payload_status =FLASH_PAYLOAD_WRITE_FAILED;
-	uint16_t Host_Packet_Len=0;
-	uint32_t CRC_valu=0;
-	Host_Packet_Len =  Host_buffer[0] + 1;  // 74 + 1
-	CRC_valu = *(uint32_t*)(Host_buffer+Host_Packet_Len -4); // 74, 73, 72, 71
-	if(CRC_VERIFING_PASS == BL_CRC_verfiy((uint8_t*)&Host_buffer[0],Host_Packet_Len-4,CRC_valu))
-	{
-		Address_Host += (64 * i);  // 128 137 0 8 (80 89 00 08) --> 0x8008000
-														// 0 128 0 8  (00 80 00 08)
-		i++;
-		DataLen = Host_buffer[6];
-		Adress_varfiy = BL_Address_Varification(Address_Host);
-		if(Adress_varfiy == ADDRESS_IS_VALID)
-		{
+    Host_Packet_Len = Host_buffer[0] + 1;
+    CRC_value = *(uint32_t*)(Host_buffer + Host_Packet_Len - 4);
+    if (CRC_VERIFING_PASS == BL_CRC_verfiy((uint8_t*)&Host_buffer[0], Host_Packet_Len - 4, CRC_value)) {
+        Address_Host += (64 * i);
+        i++;
+        DataLen = Host_buffer[6];
+        Address_verify = BL_Address_Varification(Address_Host);
+        if (Address_verify == ADDRESS_IS_VALID) {
+            BL_Send_ACK(1);
+            payload_status = FlashMemory_Paylaod_Write((uint16_t*)&Host_buffer[7], Address_Host, DataLen);
+            HAL_UART_Transmit(BL_COMM_PORT, (uint8_t*)&payload_status, 1, HAL_MAX_DELAY);
+        } else {
+            HAL_UART_Transmit(BL_COMM_PORT, (uint8_t*)&Address_verify, 1, HAL_MAX_DELAY);
+        }
+    } else {
+        BL_Send_NACK();
+    }
 
-			BL_Send_ACK(1);
-
-			//flash
-			payload_status = FlashMemory_Paylaod_Write((uint16_t*)&Host_buffer[7],Address_Host,DataLen);
-			HAL_UART_Transmit(BL_COMM_PORT,(uint8_t*)&payload_status,1,HAL_MAX_DELAY);
-		}
-		else
-		{
-			HAL_UART_Transmit(BL_COMM_PORT,(uint8_t*)&Adress_varfiy,1,HAL_MAX_DELAY);
-		}
-
-		//
-	}
-	else
-	{
-		BL_Send_NACK();
-	}
-
-
-	if(Jump_Flag)
-	{
-		JumpToApplication();
-		Jump_Flag = 0;
-	}
+    if (Jump_Flag) {
+        JumpToApplication();
+        Jump_Flag = 0;
+    }
 }
+
 
 static uint8_t BL_Address_Varification(uint32_t Addresss)
 {
@@ -384,13 +372,16 @@ static uint8_t FlashMemory_Paylaod_Write(uint16_t * pdata,uint32_t StartAddress,
 
 void JumpToApplication(void) {
     // Disable all interrupts
-    __disable_irq();
+//    __disable_irq();
 
     // Get the application's start address
 //    uint32_t appStartAddress = *(__IO uint32_t*)APPLICATION_ADDRESS;
 
     // Set the main stack pointer to the application's stack pointer
     __set_MSP(*(__IO uint32_t*)APPLICATION_ADDRESS);
+
+
+    HAL_RCC_DeInit();
 
     // Get the application's reset handler (first entry in the vector table)
     pFunction appEntryPoint = (pFunction)(*(__IO uint32_t*)(APPLICATION_ADDRESS + 4));
