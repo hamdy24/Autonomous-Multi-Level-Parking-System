@@ -146,6 +146,8 @@ void MCAL_UART_ReceiveString(USART_Typedef * USARTx, uint8_t* pRxBuffer, enum Po
 
 
 void MCAL_UART_WAIT_TC (USART_Typedef *USARTx );
+void USART_Enable_IRQ();
+void USART_Disable_IRQ();
 
 
 //to do MCAL_USART_LIN_Init ()  					//LIN

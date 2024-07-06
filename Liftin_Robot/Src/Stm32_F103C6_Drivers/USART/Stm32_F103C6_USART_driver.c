@@ -113,6 +113,17 @@ void MCAL_UART_Init(USART_Typedef * USARTx, UART_Config* UARTCfg)
 	}
 
 }
+void USART_Disable_IRQ()
+{
+
+	USART2->CR1 &= ~(1<<5);
+}
+
+
+void USART_Enable_IRQ()
+{
+	USART2->CR1 |= (1<<5);
+}
 
 
 

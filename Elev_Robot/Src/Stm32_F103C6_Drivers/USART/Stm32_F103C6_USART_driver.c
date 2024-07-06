@@ -28,6 +28,19 @@ static uint8_t which_UART(USART_Typedef * USARTx)
 
 
 
+void USART_Disable_IRQ()
+{
+
+	USART2->CR1 &= ~(1<<5);
+}
+
+
+void USART_Enable_IRQ()
+{
+	USART2->CR1 |= (1<<5);
+}
+
+
 /**================================================================
  * @Fn					- MCAL_UART_Init
  * @brief 				- Initializes UART (Supported feature : ASYNCHRONOUS only)

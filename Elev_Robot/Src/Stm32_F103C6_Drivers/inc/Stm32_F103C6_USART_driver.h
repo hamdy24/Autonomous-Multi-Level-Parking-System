@@ -125,6 +125,9 @@ enum Polling_Mechanism{
 #define DIV_Fraction(_PCLK_,_BAUD_)			(uint32_t)((USARTDIV_MUL100(_PCLK_,_BAUD_) - Mantissa_MUL100(_PCLK_,_BAUD_)) * 16) / 100
 #define UART_BRR_Register(_PCLK_,_BAUD_)	((Matissa(_PCLK_,_BAUD_)) << 4) | ((DIV_Fraction(_PCLK_,_BAUD_)) & 0xF)
 
+void USART_Enable_IRQ();
+void USART_Disable_IRQ();
+
 
 
 // -------------------------------------------------------------------------

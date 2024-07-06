@@ -84,8 +84,10 @@
 #define ELEV_INIT			'V'
 
 
-#define DELAY_HOME_ELEVATOR   	2500
-#define DELAY_ELEVATOR_PARKING 	3000
+#define DELAY_HOME_ELEVATOR   	1800
+#define DELAY_ELEVATOR_PARKING 	2000
+
+#define MOTOR_SPEED			 	40
 
 
 
@@ -317,8 +319,8 @@ int main(void) {
 
 			if(!UltraMove)
 			{
-				Motor_Move_ForWard(&DC_Motor1, 60);
-				Motor_Move_ForWard(&DC_Motor2, 60);
+				Motor_Move_ForWard(&DC_Motor1, MOTOR_SPEED);
+				Motor_Move_ForWard(&DC_Motor2, MOTOR_SPEED);
 				Delay_Timer1_ms(DELAY_HOME_ELEVATOR);
 				Motor_TurnOff(&DC_Motor1);
 				Motor_TurnOff(&DC_Motor2);
@@ -368,8 +370,8 @@ int main(void) {
 		{
 			if(!ProceedParking)
 			{
-				Motor_Move_ForWard(&DC_Motor1, 60);
-				Motor_Move_ForWard(&DC_Motor2, 60);
+				Motor_Move_ForWard(&DC_Motor1, MOTOR_SPEED);
+				Motor_Move_ForWard(&DC_Motor2, MOTOR_SPEED);
 				Delay_Timer1_ms(DELAY_ELEVATOR_PARKING);
 				Motor_TurnOff(&DC_Motor1);
 				Motor_TurnOff(&DC_Motor2);
@@ -389,7 +391,7 @@ int main(void) {
 
 				Motor_Move_BackWard(&DC_Motor1, 60);
 				Motor_Move_BackWard(&DC_Motor2, 60);
-				Delay_Timer1_ms(2500);
+				Delay_Timer1_ms(2000);
 				Motor_TurnOff(&DC_Motor1);
 				Motor_TurnOff(&DC_Motor2);
 
@@ -419,7 +421,7 @@ int main(void) {
 			{
 				Motor_Move_BackWard(&DC_Motor1, 60);
 				Motor_Move_BackWard(&DC_Motor2, 60);
-				Delay_Timer1_ms(DELAY_HOME_ELEVATOR);
+				Delay_Timer1_ms(1600);
 				Motor_TurnOff(&DC_Motor1);
 				Motor_TurnOff(&DC_Motor2);
 
@@ -528,8 +530,8 @@ void Proceed_Parking(Motor_Config_t *Motor1, Motor_Config_t *Motor2)
 	LCD_enuJumpCursorTo(2, 13);
 	LCD_enuDisplayIntNum(Ultra2Distance);
 
-	Motor_Move_ForWard(Motor1, 100);
-	Motor_Move_ForWard(Motor2, 100);
+	Motor_Move_ForWard(Motor1, MOTOR_SPEED);
+	Motor_Move_ForWard(Motor2, MOTOR_SPEED);
 
 	Delay_Timer1_ms(1000);
 
@@ -602,8 +604,8 @@ void Proceed_Parking(Motor_Config_t *Motor1, Motor_Config_t *Motor2)
 
 	}
 
-	Motor_Move_BackWard(Motor1, 100);
-	Motor_Move_BackWard(Motor2, 100);
+	Motor_Move_BackWard(Motor1, MOTOR_SPEED);
+	Motor_Move_BackWard(Motor2, MOTOR_SPEED);
 
 	Delay_Timer1_ms(1000);
 
@@ -619,8 +621,8 @@ void Proceed_Parking(Motor_Config_t *Motor1, Motor_Config_t *Motor2)
 
 void Proceed_BackToHome(Motor_Config_t *Motor1, Motor_Config_t *Motor2)
 {
-	Motor_Move_ForWard(Motor1, 100);
-	Motor_Move_ForWard(Motor2, 100);
+	Motor_Move_ForWard(Motor1, MOTOR_SPEED);
+	Motor_Move_ForWard(Motor2, MOTOR_SPEED);
 
 	Delay_Timer1_ms(1000);
 

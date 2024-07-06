@@ -25,6 +25,7 @@
 #include "../Src/Stm32_F103C6_Drivers/inc/Stm32_F103C6_TIMER_driver.h"
 #include "../Src/Stm32_F103C6_Drivers/inc/Stm32_F103C6_RCC_driver.h"
 #include "../Src/Stm32_F103C6_Drivers/inc/Stm32_F103C6_USART_driver.h"
+#include "../Src/Stm32_F103C6_Drivers/inc/Stm32_F103C6_EXTI_driver.h"
 
 
 #include "../Src/HAL/UltraSonic_HC_SR04/UltraSonic_Interface.h"
@@ -137,6 +138,13 @@ void UART_Receiver_Callback(void)
 
 void Clock_Init();
 
+uint8_t LineFlag = 0;
+
+void IR1_Callback(void)
+{
+	LineFlag = 1;
+
+}
 
 
 uint8_t Done_Arriving_At_Slot_Forward = 0;
@@ -164,7 +172,14 @@ int main(void) {
 	MCAL_UART_GPIO_SetPins(USART2);
 
 
-
+//	EXTI_PinConfig_t EXTI_IR1 = {
+//			.EXTI_PIN = EXTI0PA0,
+//			.IRQ_Enable = EXTI_IRQ_Enable,
+//			.P_IRQ_CallBack = IR1_Callback,
+//			.TriggerCase = EXTI_Trigger_RISING
+//	};
+//
+//	MCAL_EXTI_GPIO_Init(&EXTI_IR1);
 
 	Motor_Config_t DC_Motor1 =
 	{
@@ -202,13 +217,31 @@ int main(void) {
 			.GPIO_OUTPUT_SPEED = GPIO_SPEED_2MHZ
 	};
 
-	GPIO_PinConfig_t IR = {
+	GPIO_PinConfig_t IR_LED = {
 			.GPIO_PinNumber = GPIO_PIN_13,
-			.GPIO_MODE = GPIO_MODE_INPUT_FLOATING,
+			.GPIO_MODE = GPIO_MODE_OUTPUT_PUSHPULL,
 			.GPIO_OUTPUT_SPEED = GPIO_SPEED_2MHZ
 	};
 
-	MCAL_GPIO_Init(GPIOC, &IR);
+	MCAL_GPIO_Init(GPIOC, &IR_LED);
+
+
+	GPIO_PinConfig_t LimSwithch_Back = {
+			.GPIO_PinNumber = GPIO_PIN_1,
+			.GPIO_MODE = GPIO_MODE_INPUT_PULLUP,
+			.GPIO_OUTPUT_SPEED = GPIO_SPEED_2MHZ
+	};
+
+	MCAL_GPIO_Init(GPIOA, &LimSwithch_Back);
+
+	GPIO_PinConfig_t LimSwithch_Forward = {
+			.GPIO_PinNumber = GPIO_PIN_0,
+			.GPIO_MODE = GPIO_MODE_INPUT_PULLUP,
+			.GPIO_OUTPUT_SPEED = GPIO_SPEED_2MHZ
+	};
+
+	MCAL_GPIO_Init(GPIOA, &LimSwithch_Forward);
+
 	Stepper_Init(&RED_StepperDirPin);
 	Stepper_Init(&BLUE_StepperDirPin);
 
@@ -312,9 +345,26 @@ int main(void) {
 
 				if((SlotNumber - 1 ))
 				{
-					Motor_Move_ForWard(&DC_Motor1, MOTORS_SPEED);
-					Motor_Move_ForWard(&DC_Motor2, MOTORS_SPEED);
-					Delay_Timer1_ms(DELAY_SLOT_TO_SLOT * (SlotNumber - 1));
+					switch (SlotNumber){
+					case 2:
+						/* Damn */
+						break;
+					case 3:
+
+						Motor_Move_ForWard(&DC_Motor1, MOTORS_SPEED);
+						Motor_Move_ForWard(&DC_Motor2, MOTORS_SPEED);
+
+						while(MCAL_GPIO_ReadPin(GPIOA, GPIO_PIN_1)){
+							Delay_Timer1_ms(10);
+						}
+						break;
+
+					}
+//					while(!LineFlag){
+//						Delay_Timer1_ms(10);
+//					}
+//					LineFlag = 0;
+//					Delay_Timer1_ms(DELAY_SLOT_TO_SLOT * (SlotNumber - 1));
 					Motor_TurnOff(&DC_Motor1);
 					Motor_TurnOff(&DC_Motor2);
 				}
@@ -349,9 +399,26 @@ int main(void) {
 			{
 				if((SlotNumber - 1 ))
 				{
-					Motor_Move_BackWard(&DC_Motor1, MOTORS_SPEED);
-					Motor_Move_BackWard(&DC_Motor2, MOTORS_SPEED);
-					Delay_Timer1_ms(DELAY_SLOT_TO_SLOT * (SlotNumber - 1));
+					switch (SlotNumber){
+					case 2:
+						/* Damn */
+						break;
+					case 3:
+
+						Motor_Move_BackWard(&DC_Motor1, MOTORS_SPEED);
+						Motor_Move_BackWard(&DC_Motor2, MOTORS_SPEED);
+
+						while(MCAL_GPIO_ReadPin(GPIOA, GPIO_PIN_0)){
+							Delay_Timer1_ms(10);
+						}
+						break;
+
+					}
+//					while(!LineFlag){
+//						Delay_Timer1_ms(10);
+//					}
+//					LineFlag = 0;
+//					Delay_Timer1_ms(DELAY_SLOT_TO_SLOT * (SlotNumber - 1));
 					Motor_TurnOff(&DC_Motor1);
 					Motor_TurnOff(&DC_Motor2);
 				}

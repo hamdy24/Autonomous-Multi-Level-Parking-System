@@ -6,6 +6,7 @@ Src/main.o: ../Src/main.c \
  ../Src/../Src/Stm32_F103C6_Drivers/inc/Stm32_F103C6_RCC_driver.h \
  ../Src/../Src/Stm32_F103C6_Drivers/inc/Stm32_F103C6_RCC_driver.h \
  ../Src/../Src/Stm32_F103C6_Drivers/inc/Stm32_F103C6_USART_driver.h \
+ ../Src/../Src/Stm32_F103C6_Drivers/inc/Stm32_F103C6_EXTI_driver.h \
  ../Src/../Src/HAL/UltraSonic_HC_SR04/UltraSonic_Interface.h \
  ../Src/../Src/HAL/UltraSonic_HC_SR04/UltraSonic_Config.h \
  ../Src/../Src/HAL/UltraSonic_HC_SR04/../../Stm32_F103C6_Drivers/inc/ErrorStates.h \
@@ -31,6 +32,7 @@ Src/main.o: ../Src/main.c \
 ../Src/../Src/Stm32_F103C6_Drivers/inc/Stm32_F103C6_RCC_driver.h:
 ../Src/../Src/Stm32_F103C6_Drivers/inc/Stm32_F103C6_RCC_driver.h:
 ../Src/../Src/Stm32_F103C6_Drivers/inc/Stm32_F103C6_USART_driver.h:
+../Src/../Src/Stm32_F103C6_Drivers/inc/Stm32_F103C6_EXTI_driver.h:
 ../Src/../Src/HAL/UltraSonic_HC_SR04/UltraSonic_Interface.h:
 ../Src/../Src/HAL/UltraSonic_HC_SR04/UltraSonic_Config.h:
 ../Src/../Src/HAL/UltraSonic_HC_SR04/../../Stm32_F103C6_Drivers/inc/ErrorStates.h:

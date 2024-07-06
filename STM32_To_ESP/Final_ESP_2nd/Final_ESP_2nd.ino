@@ -5,9 +5,9 @@
 
 // --------------------- Wifi configuration ----------------------------
 
-const char* ssid = "Orange-9ptg";
-const char* password = "75934821Aa@";
-const char* api_url = "http://192.168.1.2/my-api/amdy.php";
+const char* ssid = "ZagSystems";
+const char* password = "0553664875";
+const char* api_url = "http://192.168.0.103/my-api/amdy.php";
 
 WiFiClient client;
 HTTPClient http;
