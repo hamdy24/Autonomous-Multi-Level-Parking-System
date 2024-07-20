@@ -1,5 +1,0 @@
-../Src/Stm32_F103C6_Drivers/RCC/Stm32_F103C6_RCC_driver.c:45:10:MCAL_RCC_GetSYSCLKFreq	4	static
-../Src/Stm32_F103C6_Drivers/RCC/Stm32_F103C6_RCC_driver.c:63:10:MCAL_RCC_GetHCLKFreq	8	static
-../Src/Stm32_F103C6_Drivers/RCC/Stm32_F103C6_RCC_driver.c:69:10:MCAL_RCC_GetPCLK1Freq	8	static
-../Src/Stm32_F103C6_Drivers/RCC/Stm32_F103C6_RCC_driver.c:75:10:MCAL_RCC_GetPCLK2Freq	8	static
-../Src/Stm32_F103C6_Drivers/RCC/Stm32_F103C6_RCC_driver.c:95:12:MCAL_RCC_CLK_Init	24	static

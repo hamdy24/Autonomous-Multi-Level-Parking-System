@@ -1,4 +1,0 @@
-../Src/HAL/DC_Motor/DC_Motor.c:28:7:Motor_intialize	24	static
-../Src/HAL/DC_Motor/DC_Motor.c:62:6:Motor_TurnOff	16	static
-../Src/HAL/DC_Motor/DC_Motor.c:74:6:Motor_Move_ForWard	24	static
-../Src/HAL/DC_Motor/DC_Motor.c:90:6:Motor_Move_BackWard	24	static

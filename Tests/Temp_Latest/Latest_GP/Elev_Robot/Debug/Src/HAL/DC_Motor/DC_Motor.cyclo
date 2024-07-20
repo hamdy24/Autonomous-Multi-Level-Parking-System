@@ -1,6 +1,0 @@
-../Src/HAL/DC_Motor/DC_Motor.c:28:7:Motor_intialize	1
-../Src/HAL/DC_Motor/DC_Motor.c:49:6:Motor_TurnOff	1
-../Src/HAL/DC_Motor/DC_Motor.c:61:6:Motor_Move_ForWard	1
-../Src/HAL/DC_Motor/DC_Motor.c:74:6:Motor_Move_BackWard	1
-../Src/HAL/DC_Motor/DC_Motor.c:82:6:Motor_Move_Right	1
-../Src/HAL/DC_Motor/DC_Motor.c:89:6:Motor_Move_Left	1
