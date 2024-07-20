@@ -91,6 +91,7 @@ We extend our gratitude to Prof. Osama ElGhoniemy for his invaluable guidance an
 ## Contact
 For more information, please contact:
 - [Hamdy Abdelrahman](https://www.linkedin.com/in/hamdy-abdul-rahman/)
-- [hamdy.abdelrhmaan@gmail.com]
+- [Abdullah Emad](https://github.com/bahrawyyy)
+- [Mona Mohamed](https://github.com/MoNaElsadek)
 
 ---
