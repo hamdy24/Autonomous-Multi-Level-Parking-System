@@ -1,6 +1,6 @@
 # Automated Multi-Level Parking System
 ---
-![Project Logo]([link-to-your-logo-or-relevant-image](https://www.google.com/url?sa=i&url=https%3A%2F%2Ftheautomatedparkingcompany.com%2Fmultilevel-car-parking-system-cost-a-sustainable-solution-for-urban-parking-challenges%2F&psig=AOvVaw3-SsQ91WVHK9mzg8uqlch-&ust=1721564720308000&source=images&cd=vfe&opi=89978449&ved=0CBEQjRxqFwoTCPiHhsjOtYcDFQAAAAAdAAAAABAE))
+![Project Logo](https://www.google.com/url?sa=i&url=https%3A%2F%2Ftheautomatedparkingcompany.com%2Fmultilevel-car-parking-system-cost-a-sustainable-solution-for-urban-parking-challenges%2F&psig=AOvVaw3-SsQ91WVHK9mzg8uqlch-&ust=1721564720308000&source=images&cd=vfe&opi=89978449&ved=0CBEQjRxqFwoTCPiHhsjOtYcDFQAAAAAdAAAAABAE)
 
 ## Overview
 The Automated Multi-Level Parking System is a cutting-edge project designed to streamline parking management using advanced technologies such as Vehicle-to-Vehicle (V2V) communication and Firmware Over-The-Air (FOTA) updates. This project leverages the STM32 microcontroller and NodeMCU to create a robust, efficient, and scalable solution for modern parking challenges.
