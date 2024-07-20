@@ -33,9 +33,14 @@ void Stepper_Move_Steps(TIMER_Typedef *TIMERx, Timer_Channel ChannelX, uint16_t 
 	{
 	case Stepper_Down:
 		MCAL_GPIO_WritePin(StepperDir_Port, Global_Stepper_Pin, GPIO_PIN_LOW);
+		MCAL_GPIO_WritePin(GPIOB, GPIO_PIN_6, GPIO_PIN_LOW);
+		MCAL_GPIO_WritePin(GPIOB, GPIO_PIN_8, GPIO_PIN_LOW);
 		break;
 	case Stepper_UP:
 		MCAL_GPIO_WritePin(StepperDir_Port, Global_Stepper_Pin, GPIO_PIN_HIGH);
+		MCAL_GPIO_WritePin(GPIOB, GPIO_PIN_6, GPIO_PIN_HIGH);
+		MCAL_GPIO_WritePin(GPIOB, GPIO_PIN_8, GPIO_PIN_HIGH);
+
 		break;
 	}
 	PWM_Move_Steps(TIMERx, ChannelX, steps, dutyCycle, frequency, RCC_CLK_36M);

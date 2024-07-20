@@ -57,7 +57,7 @@
 
 #define RETRIEVAL_REQUEST     'L'
 #define START_RETRIEVING       'M'
-#define FINISH_RETRIEVING        'N'
+#define FINISH_RETRIEVING        'N' // 13
 #define DONE_RETREIVING			'O'
 
 #define LIFTING_INIT		'U'
@@ -71,6 +71,7 @@
 
 #define MOTORS_SPEED	80
 
+#define STEPPER_UP_1CM					1800
 
 
 volatile uint8_t RecievedFromServer = 0;
@@ -103,6 +104,8 @@ typedef enum{
 uint16_t Buffer = 'Z';
 
 
+
+#define STEPPER_To2nd_Floor 500
 
 
 
@@ -172,14 +175,14 @@ int main(void) {
 	MCAL_UART_GPIO_SetPins(USART2);
 
 
-//	EXTI_PinConfig_t EXTI_IR1 = {
-//			.EXTI_PIN = EXTI0PA0,
-//			.IRQ_Enable = EXTI_IRQ_Enable,
-//			.P_IRQ_CallBack = IR1_Callback,
-//			.TriggerCase = EXTI_Trigger_RISING
-//	};
-//
-//	MCAL_EXTI_GPIO_Init(&EXTI_IR1);
+	//	EXTI_PinConfig_t EXTI_IR1 = {
+	//			.EXTI_PIN = EXTI0PA0,
+	//			.IRQ_Enable = EXTI_IRQ_Enable,
+	//			.P_IRQ_CallBack = IR1_Callback,
+	//			.TriggerCase = EXTI_Trigger_RISING
+	//	};
+	//
+	//	MCAL_EXTI_GPIO_Init(&EXTI_IR1);
 
 	Motor_Config_t DC_Motor1 =
 	{
@@ -206,13 +209,13 @@ int main(void) {
 	Motor_intialize(&DC_Motor2);
 
 	GPIO_PinConfig_t RED_StepperDirPin = {
-			.GPIO_PinNumber = GPIO_PIN_8,
+			.GPIO_PinNumber = GPIO_PIN_6,
 			.GPIO_MODE = GPIO_MODE_OUTPUT_PUSHPULL,
 			.GPIO_OUTPUT_SPEED = GPIO_SPEED_2MHZ
 	};
 
 	GPIO_PinConfig_t BLUE_StepperDirPin = {
-			.GPIO_PinNumber = GPIO_PIN_6,
+			.GPIO_PinNumber = GPIO_PIN_8,
 			.GPIO_MODE = GPIO_MODE_OUTPUT_PUSHPULL,
 			.GPIO_OUTPUT_SPEED = GPIO_SPEED_2MHZ
 	};
@@ -345,35 +348,31 @@ int main(void) {
 
 				if((SlotNumber - 1 ))
 				{
-					switch (SlotNumber){
-					case 2:
-						/* Damn */
-						break;
-					case 3:
-
+					if (SlotNumber==3 || SlotNumber ==6){
 						Motor_Move_ForWard(&DC_Motor1, MOTORS_SPEED);
 						Motor_Move_ForWard(&DC_Motor2, MOTORS_SPEED);
 
 						while(MCAL_GPIO_ReadPin(GPIOA, GPIO_PIN_1)){
 							Delay_Timer1_ms(10);
 						}
-						break;
 
 					}
-//					while(!LineFlag){
-//						Delay_Timer1_ms(10);
-//					}
-//					LineFlag = 0;
-//					Delay_Timer1_ms(DELAY_SLOT_TO_SLOT * (SlotNumber - 1));
 					Motor_TurnOff(&DC_Motor1);
 					Motor_TurnOff(&DC_Motor2);
 				}
 
+
+				if(SlotNumber == 4 || SlotNumber == 6){
+					for(int i=0; i< STEPPER_To2nd_Floor; i++)
+					{
+						Stepper_Move_Steps(TIMER4, TIMER_CH4, 800, 50, 2200, Stepper_UP);  // B9 --> RED Step
+						Stepper_Move_Steps(TIMER4, TIMER_CH2, 800, 50, 2200, Stepper_UP);  // B7 --> BLUE Step
+						Delay_Timer1_ms(100);
+					}
+
+				}
+
 				Delay_Timer1_ms(DELAY_PROCESS_TO_PROCESS);
-
-
-				//					Stepper_Move_Steps(TIMER4, TIMER_CH4, 800, 50, 700, Stepper_UP);  // B9 --> RED Step
-				//					Stepper_Move_Steps(TIMER4, TIMER_CH2, 800, 50, 1100, Stepper_UP);  // B7 --> BLUE Step
 
 				Done_Arriving_At_Slot_Forward = 1;
 			}
@@ -399,11 +398,7 @@ int main(void) {
 			{
 				if((SlotNumber - 1 ))
 				{
-					switch (SlotNumber){
-					case 2:
-						/* Damn */
-						break;
-					case 3:
+					if (SlotNumber==3 || SlotNumber ==6){
 
 						Motor_Move_BackWard(&DC_Motor1, MOTORS_SPEED);
 						Motor_Move_BackWard(&DC_Motor2, MOTORS_SPEED);
@@ -411,18 +406,23 @@ int main(void) {
 						while(MCAL_GPIO_ReadPin(GPIOA, GPIO_PIN_0)){
 							Delay_Timer1_ms(10);
 						}
-						break;
 
 					}
-//					while(!LineFlag){
-//						Delay_Timer1_ms(10);
-//					}
-//					LineFlag = 0;
-//					Delay_Timer1_ms(DELAY_SLOT_TO_SLOT * (SlotNumber - 1));
 					Motor_TurnOff(&DC_Motor1);
 					Motor_TurnOff(&DC_Motor2);
 				}
 
+
+
+				if(SlotNumber == 4 || SlotNumber == 6){
+					for(int i=0; i<STEPPER_To2nd_Floor; i++)
+					{
+						Stepper_Move_Steps(TIMER4, TIMER_CH4, 800, 50, 2200, Stepper_Down);  // B9 --> RED Step
+						Stepper_Move_Steps(TIMER4, TIMER_CH2, 800, 50, 2200, Stepper_Down);  // B7 --> BLUE Step
+						Delay_Timer1_ms(100);
+					}
+
+				}
 				Delay_Timer1_ms(DELAY_PROCESS_TO_PROCESS);
 				Done_Arriving_At_Slot_Backward = 1;
 
@@ -449,13 +449,14 @@ int main(void) {
 
 		case Done_First_Home:
 		{
-			if(isAParking)
-			{
-				mySendChar = FINISH_PARKING;
-			}else if(isRetrieving)
-			{
-				mySendChar = FINISH_RETRIEVING;
-			}
+			//			if(isAParking)
+			//			{
+			//				mySendChar = FINISH_PARKING;
+			//			}else if(isRetrieving)
+			//			{
+			//			}
+
+			mySendChar = FINISH_PARKING;
 
 			//				mySendChar = FINISH_PARKING;
 			MCAL_UART_SendData(USART2, &mySendChar, Enable);

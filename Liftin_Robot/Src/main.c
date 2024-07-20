@@ -55,7 +55,7 @@
 
 #define RECEIVED_OK         'D'
 
-#define PARKING_REQUEST       'E'
+#define PARKING_REQUEST       'E' // 4
 
 #define FIRST_REKEB         'F'
 #define FIRST_HOME          'G'
@@ -66,7 +66,7 @@
 
 #define IM_DONE               'K'
 
-#define RETRIEVAL_REQUEST     'L'
+#define RETRIEVAL_REQUEST     'L' // 11
 #define START_RETRIEVING       'M'
 #define FINISH_RETRIEVING        'N'
 #define DONE_RETREIVING			'O'
@@ -85,7 +85,7 @@
 
 
 #define DELAY_HOME_ELEVATOR   	1800
-#define DELAY_ELEVATOR_PARKING 	2000
+#define DELAY_ELEVATOR_PARKING 	1850
 
 #define MOTOR_SPEED			 	40
 
@@ -168,6 +168,7 @@ uint8_t ProceedParking = 0;
 uint8_t DoneHome = 0;
 uint8_t UltraMove = 0;
 uint8_t Done_Stepper_Up = 0, Done_Stepper_Down = 0;
+uint8_t Done_Stepper_Up_R = 0, Done_Stepper_Down_R = 0;
 
 float integral = 0;
 float derivative = 0;
@@ -282,7 +283,7 @@ int main(void) {
 				MCAL_UART_SendData(USART2, &mySendChar, Enable);
 
 
-				if(!Done_Stepper_Up)
+				if(!Done_Stepper_Up && !(initialSeverResponse == RETRIEVAL_REQUEST))
 				{
 					Stepper_Move_Steps(TIMER4, TIMER_CH4, STEPPER_STEPS, 50, 700, Stepper_UP);  // B9 --> Step
 					Delay_Timer1_ms(4000);
@@ -290,12 +291,13 @@ int main(void) {
 					Done_Stepper_Up = 1;
 				}
 
+				if(initialSeverResponse != RETRIEVAL_REQUEST){
+					do{
+						HC_SR04_ReadDistance(0, &Ultra1Distance);
+						Delay_Timer1_ms(80);
 
-				do{
-					HC_SR04_ReadDistance(0, &Ultra1Distance);
-					Delay_Timer1_ms(80);
-
-				}while(Ultra1Distance > 20);
+					}while(Ultra1Distance > 20);
+				}
 
 				mySendChar = CAR_ARRIVED;
 				MCAL_UART_SendData(USART2, &mySendChar, Enable);
@@ -377,9 +379,16 @@ int main(void) {
 				Motor_TurnOff(&DC_Motor2);
 
 
-				if(!Done_Stepper_Down)
+				if(!Done_Stepper_Down && initialSeverResponse == PARKING_REQUEST)
 				{
 					Stepper_Move_Steps(TIMER4, TIMER_CH4, STEPPER_STEPS, 50, 700, Stepper_Down);  // B9 --> Step
+					Delay_Timer1_ms(4000);
+
+					Done_Stepper_Down = 1;
+				}
+				else if (!Done_Stepper_Down && initialSeverResponse == RETRIEVAL_REQUEST){
+
+					Stepper_Move_Steps(TIMER4, TIMER_CH4, STEPPER_STEPS, 50, 700, Stepper_UP);  // B9 --> Step
 					Delay_Timer1_ms(4000);
 
 					Done_Stepper_Down = 1;
@@ -391,7 +400,7 @@ int main(void) {
 
 				Motor_Move_BackWard(&DC_Motor1, 60);
 				Motor_Move_BackWard(&DC_Motor2, 60);
-				Delay_Timer1_ms(2000);
+				Delay_Timer1_ms(1800);
 				Motor_TurnOff(&DC_Motor1);
 				Motor_TurnOff(&DC_Motor2);
 
@@ -421,7 +430,7 @@ int main(void) {
 			{
 				Motor_Move_BackWard(&DC_Motor1, 60);
 				Motor_Move_BackWard(&DC_Motor2, 60);
-				Delay_Timer1_ms(1600);
+				Delay_Timer1_ms(1400);
 				Motor_TurnOff(&DC_Motor1);
 				Motor_TurnOff(&DC_Motor2);
 
@@ -471,6 +480,14 @@ int main(void) {
 		{
 			LCD_enuJumpCursorTo(1, 0);
 			LCD_enuSendString("AT HOME");
+
+			if(!Done_Stepper_Up_R && initialSeverResponse == RETRIEVAL_REQUEST)
+			{
+				Stepper_Move_Steps(TIMER4, TIMER_CH4, STEPPER_STEPS, 50, 700, Stepper_Down);  // B9 --> Step
+				Delay_Timer1_ms(4000);
+
+				Done_Stepper_Up_R = 1;
+			}
 
 			isAParking = 0;
 			isRetrieving = 0;
