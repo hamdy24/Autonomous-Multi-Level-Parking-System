@@ -39,7 +39,7 @@
 
 #define CBL_VENDOR_ID                100
 #define CBL_SW_MAJOR_VERSION         1
-#define CBL_SW_MINOR_VERSION         1
+#define CBL_SW_MINOR_VERSION         0
 #define CBL_SW_PATCH_VERSION         0
 
 

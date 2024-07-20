@@ -6,12 +6,14 @@ import sys
 import glob
 from time import sleep
 
+from cryptography.hazmat.primitives.ciphers import Cipher, algorithms, modes
+from cryptography.hazmat.backends import default_backend
+
 ''' TCP'''
 HOST = '0.0.0.0'
 PORT = 8001
 
-''' Bootloader Commands '''
-CBL_GET_VER_CMD              = 0x10
+CBL_GET_VER_CMD              = 0x10 
 CBL_GET_HELP_CMD             = 0x11
 CBL_GET_CID_CMD              = 0x12
 CBL_GET_RDP_STATUS_CMD       = 0x13
@@ -34,6 +36,21 @@ FLASH_PAYLOAD_WRITE_PASSED   = 0x01
 
 verbose_mode = 1
 Memory_Write_Active = 0
+
+
+# key = b'\x00\x01\x02\x03\x04\x05\x06\x07\x08\x09\x0A\x0B\x0C\x0D\x0E\x0F'  # 16-byte key for AES-128
+
+# def encrypt(data):
+#     cipher = Cipher(algorithms.AES(key), modes.ECB(), backend=default_backend())
+#     encryptor = cipher.encryptor()
+#     return encryptor.update(data) + encryptor.finalize()
+
+# def decrypt(data):
+#     cipher = Cipher(algorithms.AES(key), modes.ECB(), backend=default_backend())
+#     decryptor = cipher.decryptor()
+#     return decryptor.update(data) + decryptor.finalize()
+
+
 
 def Check_Serial_Ports():
     Serial_Ports = []
@@ -78,8 +95,9 @@ def Write_Data_To_TCP(Value, Length):
 
     try:
         # Send data over the TCP connection
-
+        # encrypted_response = encrypt(bufferArray)
         conn.sendall(bufferArray)
+        # conn.sendall(bufferArray)
         print(bufferArray)
         # print(Value)
     except Exception as e:
@@ -96,6 +114,7 @@ def Read_TCP(Data_Len):
             Serial_Value = conn.recv(Data_Len)
             print(Serial_Value)
             if len(Serial_Value) > 0:
+                # decrypted_data = decrypt(Serial_Value)
                 return Serial_Value
         except socket.timeout:
             print("Waiting Replay from the Bootloader")
@@ -115,6 +134,8 @@ def Read_Data_From_Serial_Port(Command_Code):
     # print(BL_ACK)
 
     BL_ACK = conn.recv(1024)
+    # BL_ACK = decrypt(data)
+
     print(f"Received '{BL_ACK}' from the client")
         
     # Process received data
@@ -425,10 +446,7 @@ def Decode_CBL_Command(Command):
 
 
             print("BL_Host_Buffer[2]: ", BL_Host_Buffer[2])
-            print("BL_Host_Buffer[3]: ", BL_Host_Buffer[3])
-            print("BL_Host_Buffer[4]: ", BL_Host_Buffer[4])
             print("BL_Host_Buffer[5]: ", BL_Host_Buffer[5])
-            
             ''' Update the Host packet with the payload length '''
             BL_Host_Buffer[6] = BinFileReadLength
             
@@ -508,10 +526,6 @@ def Decode_CBL_Command(Command):
             print("\n   Protection level (", Protection_level, ") not supported !!")
             
         
-
-# SerialPortName = input("Enter the Port Name of your device(Ex: COM3):||||WILL NOT BE USED FOR THE TCP||||")
-#Serial_Port_Configuration(SerialPortName)
-        
 with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
     s.bind((HOST, PORT))
     s.listen()
@@ -529,9 +543,9 @@ with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
             print("   CBL_FLASH_ERASE_CMD          --> 6")
             print("   CBL_MEM_WRITE_CMD            --> 7")
             
-            CBL_Command = input("\nEnter the command code : ")
-            
-            if(not CBL_Command.isdigit()):
+            CBL_Command = input("\nEnter the command code : ") 
+             
+            if(not CBL_Command.isdigit()): 
                 print("   Error !!, Please enter a valid command !! \n")
             else:
                 Decode_CBL_Command(int(CBL_Command))

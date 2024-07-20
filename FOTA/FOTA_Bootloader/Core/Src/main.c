@@ -116,23 +116,7 @@ int main(void)
 
 			ConnInitiate = 0;
 
-
-
-
-//			HAL_UART_Receive(&huart2, (uint8_t*)&Payload_Terminator, 1, HAL_MAX_DELAY);
-//			if(Payload_Terminator == '#')
-//			{
-//				// Jump to the app
-//			}else if(Payload_Terminator == '&')
-//			{
-//				// Nooooooootthinnngg
-//			}else{
-//				// Payload_Terminator format is incorrect
-//			}
 		}
-			// SRAM
-			// Jump to 0x8008000
-			// Consider spaces and new lines
 
 		/* USER CODE END WHILE */
 

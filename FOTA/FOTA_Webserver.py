@@ -4,8 +4,8 @@ import os
 app = Flask(__name__)
 
 # Hardcoded admin credentials (for demo purposes)
-ADMIN_USERNAME = 'ARMPS_2024'
-ADMIN_PASSWORD = 'ARMPS_2024'
+ADMIN_USERNAME = 'ADMIN_2024'
+ADMIN_PASSWORD = 'ADMIN_2024'
 
 # Determine the directory of the current script
 SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
@@ -22,7 +22,7 @@ login_template = '''
         body {
             font-family: Arial, sans-serif;
             background: url('/background.jpg') no-repeat center center fixed;
-            background-size: cover;
+            background-size: 1700px 850px;
             display: flex;
             justify-content: center;
             align-items: center;
@@ -108,7 +108,7 @@ def upload_file_form():
                 body {
                     font-family: Arial, sans-serif;
                     background: url('/background.jpg') no-repeat center center fixed;
-                    background-size: cover;
+                    background-size: 1700px 850px;
                     display: flex;
                     justify-content: center;
                     align-items: center;
@@ -161,7 +161,7 @@ def upload_file_form():
             return redirect(request.url)
 
         if file:
-            filepath = os.path.join(app.config['UPLOAD_FOLDER'], 'NewBinary.bin')
+            filepath = os.path.join(app.config['UPLOAD_FOLDER'], 'TestBootloader.bin')
             file.save(filepath)
             return '''
             <!doctype html>
@@ -172,7 +172,7 @@ def upload_file_form():
                     body {{
                         font-family: Arial, sans-serif;
                         background: url('/background.jpg') no-repeat center center fixed;
-                        background-size: cover;
+                        background-size: 1700px 850px;
                         display: flex;
                         justify-content: center;
                         align-items: center;

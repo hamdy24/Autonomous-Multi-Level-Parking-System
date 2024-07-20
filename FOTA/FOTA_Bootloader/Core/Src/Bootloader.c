@@ -56,9 +56,10 @@ BL_status BL_FeatchHostCommand()
 
 
 	Hal_status = HAL_UART_Receive(BL_COMM_PORT,&Host_buffer[1],199,HAL_MAX_DELAY);
-	HAL_UART_Transmit(BL_COMM_PORT,(uint8_t*)Host_buffer,200,HAL_MAX_DELAY);
+	if((int)Host_buffer[1] == CBL_MEM_WRITE_CMD)
+		HAL_UART_Transmit(BL_COMM_PORT,(uint8_t*)Host_buffer,200,HAL_MAX_DELAY);
 
-	if(Host_buffer[6] < 64 && Host_buffer[6] !=0)
+	if((Host_buffer[6] < 64 && Host_buffer[6] !=0) && ((int)Host_buffer[1] == CBL_MEM_WRITE_CMD))
 	{
 		Jump_Flag = 1;
 	}
