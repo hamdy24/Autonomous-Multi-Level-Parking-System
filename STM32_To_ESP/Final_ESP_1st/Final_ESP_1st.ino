@@ -63,15 +63,9 @@ char Buffer[22] = {0};
 
 char c;
 int i=0;
-const char* ssid = "ZagSystems";
-const char* password = "0553664875";
-const char* api_url = "http://192.168.0.103/my-api/amdy.php";
-
-// Thouggggggggggggggggggggggggggggggggggghhhhhhhhhhhhhhhhhhhtssss
-
-// ------------- Make our process a critical section
-// ------------- Reconsider delays in the esp codesssssssssss
-
+const char* ssid = "ashaf"; // ashaf
+const char* password = "gogoonanos123"; // 
+const char* api_url = "http://192.168.43.120/my-api/amdy.php";
 
 const int ledPin = 5; 
 
@@ -207,7 +201,7 @@ void loop() {
     Http_Update_Robot1_Status(charToInt(FIRST_HOME));
               
     robot2_state = intToChar(Http_Read_SecondRobotStatus());
-    while(robot2_state != FINISH_PARKING)
+    while(robot2_state != FINISH_PARKING && robot2_state != FINISH_RETRIEVING)
     {
       robot2_state = intToChar(Http_Read_SecondRobotStatus());
       DEBUG_SERIAL.println("Waiting for [FINISH_PARKING]");

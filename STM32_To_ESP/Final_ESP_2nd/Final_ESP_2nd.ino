@@ -5,10 +5,9 @@
 
 // --------------------- Wifi configuration ----------------------------
 
-const char* ssid = "ZagSystems";
-const char* password = "0553664875";
-const char* api_url = "http://192.168.0.103/my-api/amdy.php";
-
+const char* ssid = "ashaf"; // ashaf
+const char* password = "gogoonanos123"; // 
+const char* api_url = "http://192.168.43.120/my-api/amdy.php";
 WiFiClient client;
 HTTPClient http;
 
@@ -24,7 +23,7 @@ bool isParking = false, isRetreiving = false;
 
 #define RECEIVED_OK         'D'
 
-#define PARKING_REQUEST       'E'  // For now, mapping to 1 in DB.
+#define PARKING_REQUEST       'E'  
 
 #define FIRST_REKEB         'F'
 #define FIRST_HOME          'G'
@@ -88,7 +87,7 @@ void setup() {
   STM_SERIAL.begin(115200);
   WiFi.begin(ssid, password);
   while (WiFi.status() != WL_CONNECTED) {
-    delay(1000);
+    delay(500);
     DEBUG_SERIAL.println("Connecting to WiFi...");
   }
   DEBUG_SERIAL.println("Connected to WiFi");
